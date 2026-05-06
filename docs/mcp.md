@@ -39,11 +39,16 @@ docker run --rm \
 ## Tools
 
 - `lb_get_dashboard(include_raw=false)`
+- `lb_discover_context(include_raw=false)`
 - `lb_list_views(include_raw=false)`
 - `lb_list_templates(view_id, include_raw=false)`
 - `lb_get_viewerapi(view_id?, start_date?, end_date?, tz?, include_raw=false)`
-- `lb_fetch_schedule_range(view_id, start_date, end_date, template_ids?, tz?, include_raw=false)`
+- `lb_fetch_schedule_range(start_date, end_date, view_id?, template_ids?, tz?, include_raw=false)`
 - `lb_get_subscription(emp_id, include_raw=false)`
 - `lb_get_employee_feed(customer_id?, emp_id?, since?, include_raw=false)`
 
 All dates must be `YYYYMMDD`.
+
+`LB_DEFAULT_VIEW_ID` is optional. If dashboard metadata has no views, `lb_list_views` and
+`lb_discover_context` use ViewerAPI's default context so a first-time user does not need to
+know a Lightning Bolt view ID before fetching schedule data.

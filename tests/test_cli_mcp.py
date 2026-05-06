@@ -18,6 +18,7 @@ async def test_mcp_tool_registration() -> None:
     tools = await server.list_tools()
 
     names = {tool.name for tool in tools}
+    assert "lb_discover_context" in names
     assert "lb_get_dashboard" in names
     assert "lb_get_viewerapi" in names
     assert "lb_get_employee_feed" in names

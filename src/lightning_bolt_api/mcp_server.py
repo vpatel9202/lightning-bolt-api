@@ -32,6 +32,11 @@ def build_server(*, host: str = "127.0.0.1", port: int = 8000) -> FastMCP:
             return model_to_jsonable(await client.list_views(), include_raw=include_raw)
 
     @mcp.tool()
+    async def lb_discover_context(include_raw: bool = False) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(await client.discover_context(), include_raw=include_raw)
+
+    @mcp.tool()
     async def lb_list_templates(view_id: int, include_raw: bool = False) -> list[dict[str, Any]]:
         async with LightningBoltClient.from_env() as client:
             return model_to_jsonable(await client.list_templates(view_id), include_raw=include_raw)
@@ -57,9 +62,9 @@ def build_server(*, host: str = "127.0.0.1", port: int = 8000) -> FastMCP:
 
     @mcp.tool()
     async def lb_fetch_schedule_range(
-        view_id: int,
         start_date: str,
         end_date: str,
+        view_id: int | None = None,
         template_ids: list[int] | None = None,
         tz: str | None = None,
         include_raw: bool = False,

@@ -24,6 +24,7 @@ from lightning_bolt_api.constants import (
 from lightning_bolt_api.models import (
     ActivityFeed,
     Dashboard,
+    DiscoveredContext,
     SessionState,
     Slot,
     Subscription,
@@ -54,7 +55,7 @@ def default_session_cache_path() -> Path:
     env_path = os.getenv("LB_SESSION_CACHE")
     if env_path:
         path = Path(env_path).expanduser()
-        if path.suffix:
+        if path.suffix or path.is_file():
             return path
         return path / "session.json"
     return Path(user_cache_dir("lightning-bolt-api")) / "session.json"
@@ -100,6 +101,9 @@ class LightningBoltClient:
         self.username = username
         self.password = password
         self.session_cache = Path(session_cache).expanduser() if session_cache else None
+        self._persist_enabled = (
+            session_cache is not None or username is not None or password is not None
+        )
         self.default_tz = default_tz
         self._refresh_lock = asyncio.Lock()
         self._owns_http_client = http_client is None
@@ -250,14 +254,56 @@ class LightningBoltClient:
         return dashboard
 
     async def list_views(self) -> list[View]:
+        context = await self.discover_context()
+        return context.views
+
+    async def discover_context(self) -> DiscoveredContext:
         dashboard = await self.get_dashboard()
         if dashboard.views:
-            return dashboard.views
+            return DiscoveredContext(
+                customer_id=self.session.customer_id,
+                emp_id=self.session.emp_id,
+                user_id=self.session.user_id,
+                dashboard_view_count=len(dashboard.views),
+                default_view=dashboard.views[0],
+                views=dashboard.views,
+                can_omit_view_id=True,
+                default_tz=self.default_tz,
+                source="dashboard",
+                raw={"dashboard": dashboard.raw},
+            )
+
         default_view_id = os.getenv("LB_DEFAULT_VIEW_ID")
         if default_view_id:
             viewer = await self.get_viewerapi(view_id=int(default_view_id))
-            return viewer.views or ([viewer.view_context] if viewer.view_context else [])
-        return []
+            views = _viewer_views_or_default(viewer)
+            return DiscoveredContext(
+                customer_id=self.session.customer_id,
+                emp_id=self.session.emp_id,
+                user_id=self.session.user_id,
+                dashboard_view_count=0,
+                default_view=views[0] if views else None,
+                views=views,
+                can_omit_view_id=True,
+                default_tz=self.default_tz,
+                source="env_default_view_id",
+                raw={"dashboard": dashboard.raw, "viewerapi": viewer.raw},
+            )
+
+        viewer = await self.get_viewerapi()
+        views = _viewer_views_or_default(viewer)
+        return DiscoveredContext(
+            customer_id=self.session.customer_id,
+            emp_id=self.session.emp_id,
+            user_id=self.session.user_id,
+            dashboard_view_count=0,
+            default_view=views[0] if views else None,
+            views=views,
+            can_omit_view_id=True,
+            default_tz=self.default_tz,
+            source="viewerapi_default_context",
+            raw={"dashboard": dashboard.raw, "viewerapi": viewer.raw},
+        )
 
     async def list_templates(self, view_id: int) -> list[Template]:
         viewer = await self.get_viewerapi(view_id=view_id)
@@ -291,14 +337,17 @@ class LightningBoltClient:
     async def fetch_schedule(
         self,
         *,
-        view_id: int,
+        view_id: int | None = None,
         start_date: date | str,
         end_date: date | str,
         template_ids: list[int] | None = None,
         tz: str | None = None,
     ) -> list[Slot]:
+        resolved_view_id = view_id
+        if resolved_view_id is None and os.getenv("LB_DEFAULT_VIEW_ID"):
+            resolved_view_id = int(os.environ["LB_DEFAULT_VIEW_ID"])
         viewer = await self.get_viewerapi(
-            view_id=view_id,
+            view_id=resolved_view_id,
             start_date=start_date,
             end_date=end_date,
             tz=tz,
@@ -418,6 +467,8 @@ class LightningBoltClient:
         return self.session.cookies.get(name)
 
     def _persist_session(self) -> None:
+        if not self._persist_enabled:
+            return
         if self.session.access_token or self.session.refresh_token or self.session.cookies:
             save_session(self.session, self.session_cache)
 
@@ -436,6 +487,20 @@ def _first_int(*values: Any) -> int | None:
         except (TypeError, ValueError):
             continue
     return None
+
+
+def _viewer_views_or_default(viewer: ViewerApiResponse) -> list[View]:
+    if viewer.views:
+        return viewer.views
+    if viewer.view_context:
+        return [viewer.view_context]
+    return [
+        View(
+            view_id=None,
+            name="Default",
+            raw={"source": "viewerapi_default_context", "view_id": None},
+        )
+    ]
 
 
 def model_to_jsonable(model: Any, *, include_raw: bool = True) -> Any:

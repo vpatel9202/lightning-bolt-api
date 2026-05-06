@@ -57,6 +57,18 @@ class Dashboard(RawModel):
     views: list[View] = Field(default_factory=list)
 
 
+class DiscoveredContext(RawModel):
+    customer_id: int | None = None
+    emp_id: int | None = None
+    user_id: int | None = None
+    dashboard_view_count: int = 0
+    default_view: View | None = None
+    views: list[View] = Field(default_factory=list)
+    can_omit_view_id: bool = False
+    default_tz: str = "UTC"
+    source: str = "unknown"
+
+
 class Slot(RawModel):
     slot_id: int | None = None
     slot_uuid: str | None = None

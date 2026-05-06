@@ -53,14 +53,19 @@ want a file.
 ```bash
 uv run lb-api login
 uv run lb-api dashboard
+uv run lb-api discover
 uv run lb-api views
 uv run lb-api templates --view-id 123
 uv run lb-api viewerapi --view-id 123 --start 20260501 --end 20260531
-uv run lb-api schedule --view-id 123 --start 20260501 --end 20260531
+uv run lb-api schedule --start 20260501 --end 20260531
 uv run lb-api personal-schedule --emp-id 10001 --start 20260501 --end 20260531
 uv run lb-api subscription --emp-id 10001
 uv run lb-api feed --emp-id 10001 --since 1770000000
 ```
+
+`discover`, `views`, `viewerapi`, and `schedule` do not require `LB_DEFAULT_VIEW_ID`.
+When dashboard metadata has no views, the client calls ViewerAPI without `view_id` and
+uses Lightning Bolt's default context.
 
 Request dates must be `YYYYMMDD`. ISO strings such as `2026-05-01` are rejected because
 Lightning Bolt silently ignores them for these endpoints.
@@ -85,6 +90,7 @@ from environment variables or mounted secrets, not MCP tool arguments.
 Tools:
 
 - `lb_get_dashboard`
+- `lb_discover_context`
 - `lb_list_views`
 - `lb_list_templates`
 - `lb_get_viewerapi`
@@ -116,7 +122,9 @@ Use a small date range first:
 uv run lb-api login
 uv run lb-api dashboard
 uv run lb-api views
-uv run lb-api viewerapi --view-id "$LB_DEFAULT_VIEW_ID" --start 20260501 --end 20260507
+uv run lb-api discover
+uv run lb-api viewerapi --start 20260501 --end 20260507
+uv run lb-api schedule --start 20260501 --end 20260507
 ```
 
 After validation, check `git status --short` and make sure only intended source/docs/test

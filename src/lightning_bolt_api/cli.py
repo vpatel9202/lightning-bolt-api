@@ -143,10 +143,30 @@ def viewerapi_command(
 
 
 @app.command()
+def discover(
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+    include_raw: Annotated[
+        bool, typer.Option(help="Include preserved raw Lightning Bolt JSON.")
+    ] = False,
+) -> None:
+    """Discover usable default Lightning Bolt context."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(await client.discover_context(), include_raw=include_raw)
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command()
 def schedule(
-    view_id: Annotated[int, typer.Option("--view-id", help="Lightning Bolt view ID.")],
     start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
     end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    view_id: Annotated[
+        int | None, typer.Option("--view-id", help="Lightning Bolt view ID.")
+    ] = None,
     template_id: Annotated[
         list[int] | None, typer.Option("--template-id", help="Filter by template ID.")
     ] = None,

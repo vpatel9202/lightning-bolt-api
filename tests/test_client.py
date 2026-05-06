@@ -100,6 +100,67 @@ async def test_viewerapi_uses_confirmed_body_fields() -> None:
 
 @pytest.mark.asyncio
 @respx.mock
+async def test_list_views_falls_back_to_viewerapi_default_context() -> None:
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+        ),
+        session_cache=None,
+    )
+    respx.get(f"{LBLITE_BASE_URL}/api/v1/dashboard").mock(
+        return_value=httpx.Response(200, json={"views": []})
+    )
+    respx.post(f"{LBAPI_BASE_URL}/viewerapi").mock(
+        return_value=httpx.Response(
+            200,
+            json={"view_context": {"view_id": 50, "name": "Example View"}},
+        )
+    )
+
+    try:
+        views = await client.list_views()
+    finally:
+        await client.aclose()
+
+    assert len(views) == 1
+    assert views[0].view_id == 50
+    assert views[0].name == "Example View"
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_fetch_schedule_can_omit_view_id() -> None:
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+        ),
+        session_cache=None,
+    )
+    route = respx.post(f"{LBAPI_BASE_URL}/viewerapi").mock(
+        return_value=httpx.Response(200, json={"schedule_data": {"data": []}})
+    )
+
+    try:
+        slots = await client.fetch_schedule(start_date="20260501", end_date="20260507")
+    finally:
+        await client.aclose()
+
+    assert slots == []
+    assert json.loads(route.calls.last.request.content) == {
+        "tz": "UTC",
+        "start_date": "20260501",
+        "end_date": "20260507",
+    }
+
+
+@pytest.mark.asyncio
+@respx.mock
 async def test_concurrent_refresh_is_serialized(tmp_path: Path) -> None:
     old_exp = int(time.time()) - 10
     new_exp = int(time.time()) + 3600
