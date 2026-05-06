@@ -234,8 +234,51 @@ async def test_find_employee_returns_ranked_matches() -> None:
     finally:
         await client.aclose()
 
+    assert len(matches) == 1
     assert matches[0].emp_id == 20319
-    assert matches[0].score > matches[1].score
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_find_employee_uses_env_default_view_and_filters_weak_matches(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LB_DEFAULT_VIEW_ID", "50")
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+        ),
+        session_cache=None,
+    )
+    route = respx.post(f"{LBAPI_BASE_URL}/viewerapi").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "personnel": [
+                    {
+                        "emp_id": 20319,
+                        "display_name": "Vash Patel",
+                        "compact_name": "vvp",
+                        "last_name": "Patel",
+                    }
+                ]
+            },
+        )
+    )
+
+    try:
+        matches = await client.find_employee("Halfast")
+    finally:
+        await client.aclose()
+
+    assert matches == []
+    assert json.loads(route.calls.last.request.content) == {
+        "tz": "UTC",
+        "view_id": 50,
+    }
 
 
 @pytest.mark.asyncio

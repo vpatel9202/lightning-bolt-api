@@ -253,6 +253,9 @@ def find_employee(
         int | None, typer.Option("--view-id", help="Lightning Bolt view ID.")
     ] = None,
     limit: Annotated[int, typer.Option("--limit", help="Maximum number of matches.")] = 10,
+    min_score: Annotated[
+        float, typer.Option("--min-score", help="Minimum fuzzy-match score from 0.0 to 1.0.")
+    ] = 0.7,
     output: Annotated[
         Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
     ] = None,
@@ -265,7 +268,12 @@ def find_employee(
     async def run() -> Any:
         async with LightningBoltClient.from_env() as client:
             return model_to_jsonable(
-                await client.find_employee(query, view_id=view_id, limit=limit),
+                await client.find_employee(
+                    query,
+                    view_id=view_id,
+                    limit=limit,
+                    min_score=min_score,
+                ),
                 include_raw=include_raw,
             )
 

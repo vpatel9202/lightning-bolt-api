@@ -399,13 +399,17 @@ class LightningBoltClient:
         *,
         view_id: int | None = None,
         limit: int = 10,
+        min_score: float = 0.7,
         tz: str | None = None,
     ) -> list[EmployeeMatch]:
         if not query.strip():
             raise ValueError("Employee query must not be empty.")
-        viewer = await self.get_viewerapi(view_id=view_id, tz=tz)
+        resolved_view_id = view_id
+        if resolved_view_id is None and os.getenv("LB_DEFAULT_VIEW_ID"):
+            resolved_view_id = int(os.environ["LB_DEFAULT_VIEW_ID"])
+        viewer = await self.get_viewerapi(view_id=resolved_view_id, tz=tz)
         matches = [_score_personnel(query, personnel) for personnel in viewer.personnel]
-        matches = [match for match in matches if match.score > 0]
+        matches = [match for match in matches if match.score >= min_score]
         matches.sort(key=lambda match: (-match.score, match.display_name or ""))
         return matches[:limit]
 

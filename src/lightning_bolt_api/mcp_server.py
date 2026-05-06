@@ -97,11 +97,17 @@ def build_server(*, host: str = "127.0.0.1", port: int = 8000) -> FastMCP:
         query: str,
         view_id: int | None = None,
         limit: int = 10,
+        min_score: float = 0.7,
         include_raw: bool = False,
     ) -> list[dict[str, Any]]:
         async with LightningBoltClient.from_env() as client:
             return model_to_jsonable(
-                await client.find_employee(query, view_id=view_id, limit=limit),
+                await client.find_employee(
+                    query,
+                    view_id=view_id,
+                    limit=limit,
+                    min_score=min_score,
+                ),
                 include_raw=include_raw,
             )
 

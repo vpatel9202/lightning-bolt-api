@@ -158,7 +158,9 @@ Compact responses include `calendar_urls` and `default_calendar_url`; pass
 Returns ranked personnel matches so users can discover the stable employee ID to put in
 `LB_EMP_ID`.
 
-Each match includes `emp_id`, score, visible names, and matched fields.
+Each match includes `emp_id`, score, visible names, and matched fields. The tool uses
+`LB_DEFAULT_VIEW_ID` when `view_id` is omitted, and filters out weak matches below the
+default minimum score of `0.7`.
 
 ### `lb_get_employee_feed(customer_id?, emp_id?, since?, include_raw=false)`
 

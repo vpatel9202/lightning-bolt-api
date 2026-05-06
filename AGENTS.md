@@ -111,6 +111,8 @@ Employee-scoped reads:
 
 - Prefer `LB_EMP_ID` for stable automation.
 - `LB_EMPLOYEE_NAME` is a fuzzy-match fallback for discovery and convenience.
+- `find_employee` uses `LB_DEFAULT_VIEW_ID` when set; without a broader view, the default
+  "Me" context may only expose the authenticated user.
 - Do not rely on display names as durable identifiers.
 
 ## Non-Goals

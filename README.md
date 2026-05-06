@@ -51,7 +51,9 @@ view ID and uses Lightning Bolt's default context.
 
 `LB_EMP_ID` is the preferred way to set the default employee for personal schedule,
 subscription, and feed reads. If the ID is unknown, use `lb-api find-employee "name"` or
-set `LB_EMPLOYEE_NAME` for fuzzy matching against visible personnel.
+set `LB_EMPLOYEE_NAME` for fuzzy matching against visible personnel. Employee lookup uses
+`LB_DEFAULT_VIEW_ID` when it is set, which is useful when Lightning Bolt's default "Me"
+context only exposes the authenticated user.
 
 Security rules:
 

@@ -93,8 +93,9 @@ Employee-scoped reads resolve an employee ID in this order:
 3. `LB_EMPLOYEE_NAME`, fuzzy-matched against ViewerAPI `personnel`.
 4. Authenticated session employee ID.
 
-Fuzzy matching is intended for discovery and first-run convenience. Stable automation
-should use `LB_EMP_ID`.
+Fuzzy matching is intended for discovery and first-run convenience. It uses
+`LB_DEFAULT_VIEW_ID` when configured and filters weak matches by default. Stable
+automation should use `LB_EMP_ID`.
 
 ## Discovery
 
