@@ -42,6 +42,15 @@ class Personnel(RawModel):
     ptype_id: int | None = None
 
 
+class EmployeeMatch(RawModel):
+    emp_id: int | None = None
+    score: float = 0.0
+    display_name: str | None = None
+    last_name: str | None = None
+    compact_name: str | None = None
+    matched_fields: list[str] = Field(default_factory=list)
+
+
 class Assignment(RawModel):
     assign_id: int | None = None
     display_name: str | None = None
@@ -133,7 +142,13 @@ class ViewerApiResponse(RawModel):
 
 
 class Subscription(RawModel):
+    subscription_id: int | None = None
+    customer_id: int | None = None
     emp_id: int | None = None
+    md5: str | None = None
+    tz: str | None = None
+    calendar_urls: dict[str, str] = Field(default_factory=dict)
+    default_calendar_url: str | None = None
 
 
 class ActivityFeedItem(RawModel):

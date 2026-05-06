@@ -82,10 +82,26 @@ def build_server(*, host: str = "127.0.0.1", port: int = 8000) -> FastMCP:
             )
 
     @mcp.tool()
-    async def lb_get_subscription(emp_id: int, include_raw: bool = False) -> dict[str, Any]:
+    async def lb_get_subscription(
+        emp_id: int | None = None,
+        include_raw: bool = False,
+    ) -> dict[str, Any]:
         async with LightningBoltClient.from_env() as client:
             return model_to_jsonable(
                 await client.get_subscription(emp_id=emp_id),
+                include_raw=include_raw,
+            )
+
+    @mcp.tool()
+    async def lb_find_employee(
+        query: str,
+        view_id: int | None = None,
+        limit: int = 10,
+        include_raw: bool = False,
+    ) -> list[dict[str, Any]]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.find_employee(query, view_id=view_id, limit=limit),
                 include_raw=include_raw,
             )
 

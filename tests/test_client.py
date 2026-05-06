@@ -161,6 +161,85 @@ async def test_fetch_schedule_can_omit_view_id() -> None:
 
 @pytest.mark.asyncio
 @respx.mock
+async def test_get_subscription_uses_env_emp_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("LB_EMP_ID", "20319")
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+        ),
+        session_cache=None,
+    )
+    route = respx.get(f"{LBAPI_BASE_URL}/subscription").mock(
+        return_value=httpx.Response(
+            200,
+            json=[
+                {
+                    "id": 37854,
+                    "emp_id": 20319,
+                    "md5": "96737dd04f0a424b4e0f8ed93a28e455",
+                }
+            ],
+        )
+    )
+
+    try:
+        subscription = await client.get_subscription()
+    finally:
+        await client.aclose()
+
+    assert route.calls.last.request.url.params["emp_id"] == "20319"
+    assert subscription.emp_id == 20319
+    assert subscription.default_calendar_url is not None
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_find_employee_returns_ranked_matches() -> None:
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+        ),
+        session_cache=None,
+    )
+    respx.post(f"{LBAPI_BASE_URL}/viewerapi").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "personnel": [
+                    {
+                        "emp_id": 20319,
+                        "display_name": "Patel, Vash MD",
+                        "compact_name": "V Patel",
+                        "last_name": "Patel",
+                    },
+                    {
+                        "emp_id": 20088,
+                        "display_name": "Example, Other MD",
+                        "compact_name": "O Example",
+                        "last_name": "Example",
+                    },
+                ]
+            },
+        )
+    )
+
+    try:
+        matches = await client.find_employee("vash patel")
+    finally:
+        await client.aclose()
+
+    assert matches[0].emp_id == 20319
+    assert matches[0].score > matches[1].score
+
+
+@pytest.mark.asyncio
+@respx.mock
 async def test_concurrent_refresh_is_serialized(tmp_path: Path) -> None:
     old_exp = int(time.time()) - 10
     new_exp = int(time.time()) + 3600

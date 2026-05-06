@@ -198,9 +198,11 @@ def schedule(
 
 @app.command("personal-schedule")
 def personal_schedule(
-    emp_id: Annotated[int, typer.Option("--emp-id", help="Lightning Bolt employee ID.")],
     start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
     end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    emp_id: Annotated[
+        int | None, typer.Option("--emp-id", help="Lightning Bolt employee ID.")
+    ] = None,
     output: Annotated[
         Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
     ] = None,
@@ -222,7 +224,9 @@ def personal_schedule(
 
 @app.command()
 def subscription(
-    emp_id: Annotated[int, typer.Option("--emp-id", help="Lightning Bolt employee ID.")],
+    emp_id: Annotated[
+        int | None, typer.Option("--emp-id", help="Lightning Bolt employee ID.")
+    ] = None,
     output: Annotated[
         Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
     ] = None,
@@ -236,6 +240,32 @@ def subscription(
         async with LightningBoltClient.from_env() as client:
             return model_to_jsonable(
                 await client.get_subscription(emp_id=emp_id),
+                include_raw=include_raw,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("find-employee")
+def find_employee(
+    query: Annotated[str, typer.Argument(help="Employee name or nickname to search for.")],
+    view_id: Annotated[
+        int | None, typer.Option("--view-id", help="Lightning Bolt view ID.")
+    ] = None,
+    limit: Annotated[int, typer.Option("--limit", help="Maximum number of matches.")] = 10,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+    include_raw: Annotated[
+        bool, typer.Option(help="Include preserved raw Lightning Bolt JSON.")
+    ] = False,
+) -> None:
+    """Find employee IDs by fuzzy matching visible personnel."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.find_employee(query, view_id=view_id, limit=limit),
                 include_raw=include_raw,
             )
 

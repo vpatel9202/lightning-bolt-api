@@ -22,3 +22,5 @@ async def test_mcp_tool_registration() -> None:
     assert "lb_get_dashboard" in names
     assert "lb_get_viewerapi" in names
     assert "lb_get_employee_feed" in names
+    assert "lb_find_employee" in names
+    assert "lb_get_subscription" in names

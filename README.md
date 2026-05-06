@@ -39,12 +39,18 @@ Create `.env` from `.env.example`:
 LB_USERNAME=
 LB_PASSWORD=
 LB_SESSION_CACHE=session-cache/session.json
+LB_EMP_ID=
+LB_EMPLOYEE_NAME=
 LB_DEFAULT_VIEW_ID=
 LB_DEFAULT_TZ=America/Chicago
 ```
 
 `LB_DEFAULT_VIEW_ID` is optional. If it is not set, the client calls ViewerAPI without a
 view ID and uses Lightning Bolt's default context.
+
+`LB_EMP_ID` is the preferred way to set the default employee for personal schedule,
+subscription, and feed reads. If the ID is unknown, use `lb-api find-employee "name"` or
+set `LB_EMPLOYEE_NAME` for fuzzy matching against visible personnel.
 
 Security rules:
 
@@ -80,7 +86,12 @@ uv run lb-api schedule --view-id 123 --start 20260501 --end 20260531
 uv run lb-api personal-schedule --emp-id 10001 --start 20260501 --end 20260531
 uv run lb-api subscription --emp-id 10001
 uv run lb-api feed --emp-id 10001 --since 1770000000
+uv run lb-api find-employee "patel"
 ```
+
+When `LB_EMP_ID` is set, `personal-schedule`, `subscription`, and `feed` can omit
+`--emp-id`. Subscription output includes app-specific calendar URLs derived from Lightning
+Bolt's subscription metadata.
 
 Use `--include-raw` when you need the preserved Lightning Bolt source payload.
 
@@ -109,6 +120,7 @@ MCP tools:
 - `lb_get_viewerapi`
 - `lb_fetch_schedule_range`
 - `lb_get_subscription`
+- `lb_find_employee`
 - `lb_get_employee_feed`
 
 See [docs/mcp.md](docs/mcp.md) for transport setup and tool reference.

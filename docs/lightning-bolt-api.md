@@ -429,11 +429,23 @@ GET https://lbapi.lightning-bolt.com/subscription?emp_id=<employee-id>&dash=true
 
 Auth: bearer JWT.
 
-Returns iCal subscription metadata for an employee. Observed fields include subscription
-IDs, schedule view/template metadata, timezone, offset/window settings, checksum-like
-metadata, and excluded assignments.
+Returns calendar subscription metadata for an employee. Observed fields include
+subscription IDs, schedule view/template metadata, timezone, offset/window settings,
+checksum-like metadata, and excluded assignments.
 
 The response shape may be a list or an object. Preserve the raw payload.
+
+Lightning Bolt does not return the app-specific subscription URLs directly from this
+endpoint. They are derived from the subscription `md5` field:
+
+| App | URL |
+| --- | --- |
+| iPhone/iPad | `https://m.lightning-bolt.com/{md5}i.ics` |
+| Google Calendar | `https://m.lightning-bolt.com/{md5}g.ics` |
+| Android | `https://m.lightning-bolt.com/{md5}g.ics` |
+| Outlook 2016 and later | `webcal://m.lightning-bolt.com/{md5}o.ics` |
+| IBM Lotus Notes | `https://m.lightning-bolt.com/{md5}i.ics` |
+| Calendar for Mac/iCal | `https://m.lightning-bolt.com/{md5}i.ics` |
 
 ## Employee Feed Endpoint
 

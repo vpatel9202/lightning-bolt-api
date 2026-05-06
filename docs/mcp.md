@@ -12,6 +12,8 @@ Configure the server with environment variables or mounted secrets:
 | `LB_USERNAME` | Yes for login | Lightning Bolt username. |
 | `LB_PASSWORD` | Yes for login | Lightning Bolt password. |
 | `LB_SESSION_CACHE` | Recommended | Session cache file or directory. |
+| `LB_EMP_ID` | No | Preferred default employee ID for employee-scoped reads. |
+| `LB_EMPLOYEE_NAME` | No | Fuzzy-match fallback when the employee ID is unknown. |
 | `LB_DEFAULT_VIEW_ID` | No | Optional view override. Discovery works without it. |
 | `LB_DEFAULT_TZ` | No | IANA timezone. Defaults to `UTC` if unset. |
 
@@ -133,14 +135,21 @@ Calls ViewerAPI and returns normalized viewer state:
 Returns schedule slots for a date range. `view_id` is optional. If omitted, the client uses
 `LB_DEFAULT_VIEW_ID` when set, otherwise it calls ViewerAPI without `view_id`.
 
-### `lb_get_subscription(emp_id, include_raw=false)`
+### `lb_get_subscription(emp_id?, include_raw=false)`
 
-Returns subscription metadata for an employee ID.
+Returns subscription metadata and derived app-specific calendar URLs. If `emp_id` is
+omitted, the server resolves it from `LB_EMP_ID`, `LB_EMPLOYEE_NAME`, or the authenticated
+session.
+
+### `lb_find_employee(query, view_id?, limit=10, include_raw=false)`
+
+Returns ranked personnel matches so users can discover the stable employee ID to put in
+`LB_EMP_ID`.
 
 ### `lb_get_employee_feed(customer_id?, emp_id?, since?, include_raw=false)`
 
-Returns employee feed items. If `customer_id` or `emp_id` is omitted, the server uses IDs
-from the authenticated session when available.
+Returns employee feed items. If `emp_id` is omitted, the server uses the same employee
+resolution behavior as `lb_get_subscription`.
 
 ## Raw Payloads
 

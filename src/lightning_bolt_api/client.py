@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import difflib
 import json
 import os
+import re
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -25,6 +27,7 @@ from lightning_bolt_api.models import (
     ActivityFeed,
     Dashboard,
     DiscoveredContext,
+    EmployeeMatch,
     SessionState,
     Slot,
     Subscription,
@@ -360,33 +363,79 @@ class LightningBoltClient:
     async def fetch_personal_schedule(
         self,
         *,
-        emp_id: int,
+        emp_id: int | None = None,
         start_date: date | str,
         end_date: date | str,
     ) -> list[Slot]:
         await self.ensure_authenticated()
+        resolved_emp_id = await self.resolve_emp_id(emp_id=emp_id)
         response = await self.http.get(
             f"{LBAPI_BASE_URL}/schedule/range/",
             params={
                 "start_date": format_lb_date(start_date),
                 "end_date": format_lb_date(end_date),
                 "listed": "true",
-                "emp_id": emp_id,
+                "emp_id": resolved_emp_id,
             },
             headers=self._auth_headers(),
         )
         response.raise_for_status()
         return parse_viewerapi(response.json()).slots
 
-    async def get_subscription(self, *, emp_id: int) -> Subscription:
+    async def get_subscription(self, *, emp_id: int | None = None) -> Subscription:
         await self.ensure_authenticated()
+        resolved_emp_id = await self.resolve_emp_id(emp_id=emp_id)
         response = await self.http.get(
             f"{LBAPI_BASE_URL}/subscription",
-            params={"emp_id": emp_id, "dash": "true"},
+            params={"emp_id": resolved_emp_id, "dash": "true"},
             headers=self._auth_headers(),
         )
         response.raise_for_status()
-        return parse_subscription(response.json(), emp_id=emp_id)
+        return parse_subscription(response.json(), emp_id=resolved_emp_id)
+
+    async def find_employee(
+        self,
+        query: str,
+        *,
+        view_id: int | None = None,
+        limit: int = 10,
+        tz: str | None = None,
+    ) -> list[EmployeeMatch]:
+        if not query.strip():
+            raise ValueError("Employee query must not be empty.")
+        viewer = await self.get_viewerapi(view_id=view_id, tz=tz)
+        matches = [_score_personnel(query, personnel) for personnel in viewer.personnel]
+        matches = [match for match in matches if match.score > 0]
+        matches.sort(key=lambda match: (-match.score, match.display_name or ""))
+        return matches[:limit]
+
+    async def resolve_emp_id(
+        self,
+        *,
+        emp_id: int | None = None,
+        employee_name: str | None = None,
+    ) -> int:
+        if emp_id is not None:
+            return emp_id
+        env_emp_id = os.getenv("LB_EMP_ID")
+        if env_emp_id:
+            try:
+                return int(env_emp_id)
+            except ValueError as exc:
+                raise ValueError("LB_EMP_ID must be an integer.") from exc
+
+        query = employee_name or os.getenv("LB_EMPLOYEE_NAME")
+        if query:
+            matches = await self.find_employee(query, limit=5)
+            if _has_strong_employee_match(matches):
+                resolved = matches[0].emp_id
+                if resolved is not None:
+                    return resolved
+            raise ValueError(_employee_match_error(query, matches))
+
+        if self.session.emp_id is not None:
+            return self.session.emp_id
+        raise ValueError("Employee ID is required. Set LB_EMP_ID or pass emp_id.")
 
     async def get_employee_feed(
         self,
@@ -397,7 +446,7 @@ class LightningBoltClient:
     ) -> ActivityFeed:
         await self.ensure_authenticated()
         resolved_customer_id = customer_id or self.session.customer_id
-        resolved_emp_id = emp_id or self.session.emp_id
+        resolved_emp_id = await self.resolve_emp_id(emp_id=emp_id)
         if resolved_customer_id is None or resolved_emp_id is None:
             raise ValueError("customer_id and emp_id are required for employee feed.")
         params = {"last": since} if since is not None else None
@@ -519,3 +568,82 @@ def _strip_raw(value: Any) -> Any:
     if isinstance(value, list):
         return [_strip_raw(item) for item in value]
     return value
+
+
+def _score_personnel(query: str, personnel: Any) -> EmployeeMatch:
+    query_norm = _normalize_employee_text(query)
+    fields = {
+        "display_name": personnel.display_name,
+        "compact_name": personnel.compact_name,
+        "last_name": personnel.last_name,
+    }
+    for key in (
+        "first_name",
+        "middle_name",
+        "full_name",
+        "name",
+        "email",
+        "user_name",
+    ):
+        value = personnel.raw.get(key)
+        if isinstance(value, str):
+            fields[key] = value
+
+    best = 0.0
+    matched_fields: list[str] = []
+    for field, value in fields.items():
+        if not value:
+            continue
+        value_norm = _normalize_employee_text(value)
+        if not value_norm:
+            continue
+        score = difflib.SequenceMatcher(None, query_norm, value_norm).ratio()
+        if query_norm == value_norm:
+            score = 1.0
+        elif query_norm in value_norm or value_norm in query_norm:
+            substring_score = min(len(query_norm), len(value_norm)) / max(
+                len(query_norm), len(value_norm)
+            )
+            score = max(score, substring_score)
+        if score > best:
+            best = score
+            matched_fields = [field]
+        elif score == best:
+            matched_fields.append(field)
+
+    return EmployeeMatch(
+        emp_id=personnel.emp_id,
+        score=round(best, 3),
+        display_name=personnel.display_name,
+        last_name=personnel.last_name,
+        compact_name=personnel.compact_name,
+        matched_fields=matched_fields,
+        raw=personnel.raw,
+    )
+
+
+def _normalize_employee_text(value: str) -> str:
+    value = value.lower()
+    value = re.sub(r"\b(md|do|pa|np|rn|phd|dr)\b\.?", " ", value)
+    value = re.sub(r"[^a-z0-9]+", " ", value)
+    return " ".join(value.split())
+
+
+def _has_strong_employee_match(matches: list[EmployeeMatch]) -> bool:
+    if not matches or matches[0].emp_id is None or matches[0].score < 0.82:
+        return False
+    return len(matches) == 1 or matches[0].score - matches[1].score >= 0.05
+
+
+def _employee_match_error(query: str, matches: list[EmployeeMatch]) -> str:
+    if not matches:
+        return f"No employee matched {query!r}. Set LB_EMP_ID or use find-employee."
+    candidates = [
+        f"{match.emp_id}: {match.display_name or match.compact_name or match.last_name} "
+        f"(score={match.score})"
+        for match in matches
+    ]
+    return (
+        f"Employee name {query!r} did not resolve to a single strong match. "
+        f"Set LB_EMP_ID or choose from: {', '.join(candidates)}"
+    )

@@ -86,6 +86,10 @@ Other read endpoints:
 All Lightning Bolt request dates must be `YYYYMMDD`. ISO date strings are rejected before
 requests are sent.
 
+Employee-scoped reads prefer `LB_EMP_ID`. If that is not set, `LB_EMPLOYEE_NAME` can be
+used for fuzzy matching against ViewerAPI personnel, and the authenticated session
+employee ID is the final fallback.
+
 ## Discovery
 
 The client discovers usable context in this order:
@@ -119,6 +123,7 @@ Key models:
 - `Department`
 - `Template`
 - `Personnel`
+- `EmployeeMatch`
 - `Assignment`
 - `Slot`
 - `Subscription`

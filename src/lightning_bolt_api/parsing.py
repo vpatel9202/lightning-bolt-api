@@ -202,9 +202,44 @@ def parse_viewerapi(payload: Any) -> ViewerApiResponse:
 
 
 def parse_subscription(payload: Any, emp_id: int | None = None) -> Subscription:
+    raw: dict[str, Any]
+    record: dict[str, Any] = {}
     if isinstance(payload, dict):
-        return Subscription(emp_id=emp_id or payload.get("emp_id"), raw=payload)
-    return Subscription(emp_id=emp_id, raw={"data": payload})
+        raw = payload
+        if isinstance(payload.get("data"), list):
+            record = next((row for row in payload["data"] if isinstance(row, dict)), {})
+        else:
+            record = payload
+    elif isinstance(payload, list):
+        raw = {"data": payload}
+        record = next((row for row in payload if isinstance(row, dict)), {})
+    else:
+        raw = {"data": payload}
+
+    md5 = record.get("md5")
+    calendar_urls = _calendar_urls(str(md5)) if md5 else {}
+    return Subscription(
+        subscription_id=record.get("id") or record.get("subscription_id"),
+        customer_id=record.get("customer_id"),
+        emp_id=emp_id or record.get("emp_id"),
+        md5=str(md5) if md5 else None,
+        tz=record.get("tz"),
+        calendar_urls=calendar_urls,
+        default_calendar_url=calendar_urls.get("google"),
+        raw=raw,
+    )
+
+
+def _calendar_urls(md5: str) -> dict[str, str]:
+    base = f"m.lightning-bolt.com/{md5}"
+    return {
+        "iphone_ipad": f"https://{base}i.ics",
+        "google": f"https://{base}g.ics",
+        "android": f"https://{base}g.ics",
+        "outlook": f"webcal://{base}o.ics",
+        "lotus_notes": f"https://{base}i.ics",
+        "mac_ical": f"https://{base}i.ics",
+    }
 
 
 def parse_activity_feed(
