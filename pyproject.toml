@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Read-only Python client, CLI, and MCP server for Lightning Bolt's reverse-engineered API."
 readme = "README.md"
 requires-python = ">=3.12"
+license = "MIT"
 authors = [
   { name = "Vash Patel" }
 ]

@@ -1,11 +1,34 @@
 """Read-only client for Lightning Bolt's reverse-engineered API."""
 
-from lightning_bolt_api.client import LightningBoltClient
-from lightning_bolt_api.models import Slot, Template, View, ViewerApiResponse
+from lightning_bolt_api.client import AuthenticationError, LightningBoltClient, LightningBoltError
+from lightning_bolt_api.models import (
+    ActivityFeed,
+    ActivityFeedItem,
+    Assignment,
+    Dashboard,
+    Department,
+    Personnel,
+    SessionState,
+    Slot,
+    Subscription,
+    Template,
+    View,
+    ViewerApiResponse,
+)
 
 __all__ = [
+    "ActivityFeed",
+    "ActivityFeedItem",
+    "Assignment",
+    "AuthenticationError",
+    "Dashboard",
+    "Department",
     "LightningBoltClient",
+    "LightningBoltError",
+    "Personnel",
+    "SessionState",
     "Slot",
+    "Subscription",
     "Template",
     "View",
     "ViewerApiResponse",

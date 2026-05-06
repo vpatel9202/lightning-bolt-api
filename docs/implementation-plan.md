@@ -1,5 +1,11 @@
 # Implementation Plan
 
+## Status
+
+The v1 implementation now exists in the repo. This document remains as the original
+implementation map and acceptance criteria. Use `README.md` and `docs/mcp.md` for current
+operator-facing commands.
+
 ## Summary
 
 Build a reusable Python library, CLI, and MCP server for read-only Lightning Bolt API

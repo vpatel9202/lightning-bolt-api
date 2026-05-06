@@ -1,12 +1,123 @@
-"""MCP server entry point.
-
-The server will expose the same read-only capabilities as the Python client and
-CLI. It should support stdio for host-local MCP clients and streamable HTTP for
-host service mode and Docker.
-"""
+"""MCP server entry point for read-only Lightning Bolt API access."""
 
 from __future__ import annotations
 
+import argparse
+import os
+from typing import Any
+
+from dotenv import load_dotenv
+from mcp.server.fastmcp import FastMCP
+
+from lightning_bolt_api.client import LightningBoltClient, model_to_jsonable
+
+
+def build_server(*, host: str = "127.0.0.1", port: int = 8000) -> FastMCP:
+    mcp = FastMCP(
+        "lightning-bolt-api",
+        instructions="Read-only Lightning Bolt API access. Credentials come from environment.",
+        host=host,
+        port=port,
+        streamable_http_path="/mcp",
+    )
+
+    @mcp.tool()
+    async def lb_get_dashboard(include_raw: bool = False) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(await client.get_dashboard(), include_raw=include_raw)
+
+    @mcp.tool()
+    async def lb_list_views(include_raw: bool = False) -> list[dict[str, Any]]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(await client.list_views(), include_raw=include_raw)
+
+    @mcp.tool()
+    async def lb_list_templates(view_id: int, include_raw: bool = False) -> list[dict[str, Any]]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(await client.list_templates(view_id), include_raw=include_raw)
+
+    @mcp.tool()
+    async def lb_get_viewerapi(
+        view_id: int | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        tz: str | None = None,
+        include_raw: bool = False,
+    ) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_viewerapi(
+                    view_id=view_id,
+                    start_date=start_date,
+                    end_date=end_date,
+                    tz=tz or os.getenv("LB_DEFAULT_TZ", "UTC"),
+                ),
+                include_raw=include_raw,
+            )
+
+    @mcp.tool()
+    async def lb_fetch_schedule_range(
+        view_id: int,
+        start_date: str,
+        end_date: str,
+        template_ids: list[int] | None = None,
+        tz: str | None = None,
+        include_raw: bool = False,
+    ) -> list[dict[str, Any]]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.fetch_schedule(
+                    view_id=view_id,
+                    start_date=start_date,
+                    end_date=end_date,
+                    template_ids=template_ids,
+                    tz=tz or os.getenv("LB_DEFAULT_TZ", "UTC"),
+                ),
+                include_raw=include_raw,
+            )
+
+    @mcp.tool()
+    async def lb_get_subscription(emp_id: int, include_raw: bool = False) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_subscription(emp_id=emp_id),
+                include_raw=include_raw,
+            )
+
+    @mcp.tool()
+    async def lb_get_employee_feed(
+        customer_id: int | None = None,
+        emp_id: int | None = None,
+        since: int | None = None,
+        include_raw: bool = False,
+    ) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_employee_feed(customer_id=customer_id, emp_id=emp_id, since=since),
+                include_raw=include_raw,
+            )
+
+    return mcp
+
 
 def main() -> None:
-    raise NotImplementedError("MCP server implementation is planned in AGENTS.md.")
+    load_dotenv()
+    parser = argparse.ArgumentParser(prog="lb-api-mcp")
+    subparsers = parser.add_subparsers(dest="transport")
+    subparsers.add_parser("stdio")
+    http_parser = subparsers.add_parser("http")
+    http_parser.add_argument("--host", default="127.0.0.1")
+    http_parser.add_argument("--port", type=int, default=8000)
+    args = parser.parse_args()
+
+    transport = args.transport or "stdio"
+    if transport == "stdio":
+        build_server().run("stdio")
+    elif transport == "http":
+        build_server(host=args.host, port=args.port).run("streamable-http")
+    else:
+        parser.error(f"Unsupported transport: {transport}")
+
+
+if __name__ == "__main__":
+    main()

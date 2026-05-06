@@ -15,3 +15,5 @@ htmlcov/
 coverage.xml
 .DS_Store
 session-cache/
+session_cache
+session_cache/

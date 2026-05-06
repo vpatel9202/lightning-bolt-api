@@ -9,5 +9,6 @@ __pycache__
 .env.*
 !.env.example
 session-cache
+session_cache
 dist
 build

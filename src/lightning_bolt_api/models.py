@@ -6,7 +6,7 @@ import re
 from datetime import date, datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class RawModel(BaseModel):
@@ -18,6 +18,11 @@ class RawModel(BaseModel):
 
 class View(RawModel):
     view_id: int | None = None
+    name: str | None = None
+
+
+class Department(RawModel):
+    department_id: int | None = None
     name: str | None = None
 
 
@@ -42,6 +47,14 @@ class Assignment(RawModel):
     display_name: str | None = None
     compact_name: str | None = None
     description: str | None = None
+
+
+class Dashboard(RawModel):
+    customer_id: int | None = None
+    emp_id: int | None = None
+    user_id: int | None = None
+    user_name: str | None = None
+    views: list[View] = Field(default_factory=list)
 
 
 class Slot(RawModel):
@@ -73,6 +86,13 @@ class Slot(RawModel):
     emp_ptype: int | None = None
     assign_atype: int | None = None
 
+    @field_validator("assign_structure_id", mode="before")
+    @classmethod
+    def _coerce_assign_structure_id(cls, value: Any) -> str | None:
+        if value is None:
+            return None
+        return str(value)
+
     @property
     def is_open_shift(self) -> bool:
         return (
@@ -91,11 +111,29 @@ class Slot(RawModel):
 
 class ViewerApiResponse(RawModel):
     view_context: View | None = None
+    views: list[View] = Field(default_factory=list)
     slots: list[Slot] = Field(default_factory=list)
     personnel: list[Personnel] = Field(default_factory=list)
     assignments: list[Assignment] = Field(default_factory=list)
-    departments: list[dict[str, Any]] = Field(default_factory=list)
+    departments: list[Department] = Field(default_factory=list)
+    templates: list[Template] = Field(default_factory=list)
     holidays: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class Subscription(RawModel):
+    emp_id: int | None = None
+
+
+class ActivityFeedItem(RawModel):
+    item_id: int | str | None = None
+    created_at: datetime | None = None
+    message: str | None = None
+
+
+class ActivityFeed(RawModel):
+    customer_id: int | None = None
+    emp_id: int | None = None
+    items: list[ActivityFeedItem] = Field(default_factory=list)
 
 
 class SessionState(BaseModel):
@@ -105,3 +143,4 @@ class SessionState(BaseModel):
     customer_id: int | None = None
     emp_id: int | None = None
     user_id: int | None = None
+    cookies: dict[str, str] = Field(default_factory=dict)
