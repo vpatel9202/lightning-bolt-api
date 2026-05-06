@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "lightning_bolt_api",
+  "project_id": "7d34f619-6dad-4af2-b1ec-abf4041c2779"
+}

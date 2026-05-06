@@ -17,3 +17,8 @@ coverage.xml
 session-cache/
 session_cache
 session_cache/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
