@@ -1,0 +1,44 @@
+[project]
+name = "lightning-bolt-api"
+version = "0.1.0"
+description = "Read-only Python client, CLI, and MCP server for Lightning Bolt's reverse-engineered API."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+  { name = "Vash Patel" }
+]
+dependencies = [
+  "httpx>=0.28",
+  "mcp[cli]>=1.9",
+  "platformdirs>=4.3",
+  "pydantic>=2.10",
+  "python-dotenv>=1.0",
+  "typer>=0.15",
+]
+
+[project.scripts]
+lb-api = "lightning_bolt_api.cli:app"
+lb-api-mcp = "lightning_bolt_api.mcp_server:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.25",
+  "respx>=0.22",
+  "ruff>=0.9",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

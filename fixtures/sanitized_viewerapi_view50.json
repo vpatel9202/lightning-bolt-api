@@ -1,0 +1,2834 @@
+{
+  "assignments_sample": [
+    {
+      "assign_structure_id": "Assignment 1",
+      "assignment_to_denial_reason_map": {
+        "20016": []
+      },
+      "assignment_to_loa_reason_map": {
+        "20016": []
+      },
+      "assignment_to_locations_map": {
+        "20016": {
+          "is_location_editable": false,
+          "is_location_multiple": false,
+          "locations": []
+        }
+      },
+      "assignment_to_note_map": {
+        "20016": ""
+      },
+      "block_duration": 0,
+      "block_start_day": -2,
+      "call_order": null,
+      "color": "#f15757",
+      "colorText": "#000000",
+      "compact_name": "Example Person 1",
+      "departments": [
+        0
+      ],
+      "description": "",
+      "display_name": "Example Person 2",
+      "expired": false,
+      "is_block": false,
+      "is_location_editable": false,
+      "is_location_multiple": false,
+      "is_vrm": false,
+      "last_recurrence_date": "3000-12-31T00:00:00",
+      "loa_reasons": [],
+      "locations": [],
+      "order": 0,
+      "structure_mapping_lookup": {},
+      "structure_to_category_map": {
+        "124": null
+      },
+      "structure_to_default_times_map": {
+        "124": "07:00:00~17:00:00"
+      },
+      "structure_to_desc_map": {
+        "124": "T1"
+      },
+      "structure_to_template_map": {
+        "124": 5
+      },
+      "structures": [
+        124
+      ],
+      "structures_include_expired": [
+        124
+      ],
+      "tallies": [
+        5,
+        18,
+        85,
+        149,
+        156,
+        170,
+        173,
+        174
+      ],
+      "template_to_assign_id_map": {
+        "5": 20016
+      },
+      "template_to_assign_type_map": {
+        "5": 1
+      },
+      "template_to_default_times_map": {
+        "5": "07:00:00~17:00:00"
+      },
+      "templates": [
+        5
+      ]
+    },
+    {
+      "assign_structure_id": "Assignment 2",
+      "assignment_to_denial_reason_map": {
+        "20064": []
+      },
+      "assignment_to_loa_reason_map": {
+        "20064": []
+      },
+      "assignment_to_locations_map": {
+        "20064": {
+          "is_location_editable": false,
+          "is_location_multiple": false,
+          "locations": []
+        }
+      },
+      "assignment_to_note_map": {
+        "20064": null
+      },
+      "block_duration": 0,
+      "block_start_day": -2,
+      "call_order": null,
+      "color": "#f1dd0c",
+      "colorText": "#000000",
+      "compact_name": "Example Person 3",
+      "departments": [
+        0
+      ],
+      "description": null,
+      "display_name": "Example Person 4",
+      "expired": true,
+      "is_block": false,
+      "is_location_editable": false,
+      "is_location_multiple": false,
+      "is_vrm": false,
+      "last_recurrence_date": "2025-05-01T00:00:00",
+      "loa_reasons": [],
+      "locations": [],
+      "order": 1,
+      "structure_mapping_lookup": {},
+      "structure_to_category_map": {},
+      "structure_to_default_times_map": {},
+      "structure_to_desc_map": {},
+      "structure_to_template_map": {},
+      "structures": [],
+      "structures_include_expired": [
+        125
+      ],
+      "tallies": [],
+      "template_to_assign_id_map": {
+        "5": 20064
+      },
+      "template_to_assign_type_map": {
+        "5": 1
+      },
+      "template_to_default_times_map": {
+        "5": "07:00:00~16:00:00"
+      },
+      "templates": [
+        5
+      ]
+    },
+    {
+      "assign_structure_id": "Assignment 3",
+      "assignment_to_denial_reason_map": {
+        "20125": []
+      },
+      "assignment_to_loa_reason_map": {
+        "20125": []
+      },
+      "assignment_to_locations_map": {
+        "20125": {
+          "is_location_editable": false,
+          "is_location_multiple": false,
+          "locations": []
+        }
+      },
+      "assignment_to_note_map": {
+        "20125": ""
+      },
+      "block_duration": 0,
+      "block_start_day": -2,
+      "call_order": null,
+      "color": "#9575cd",
+      "colorText": "#000000",
+      "compact_name": "Example Person 5",
+      "departments": [
+        0
+      ],
+      "description": "",
+      "display_name": "Example Person 6",
+      "expired": false,
+      "is_block": false,
+      "is_location_editable": false,
+      "is_location_multiple": false,
+      "is_vrm": false,
+      "last_recurrence_date": "3000-12-31T00:00:00",
+      "loa_reasons": [],
+      "locations": [],
+      "order": 2,
+      "structure_mapping_lookup": {},
+      "structure_to_category_map": {
+        "159": null
+      },
+      "structure_to_default_times_map": {
+        "159": "07:00:00~17:00:00"
+      },
+      "structure_to_desc_map": {
+        "159": "A1 - P"
+      },
+      "structure_to_template_map": {
+        "159": 5
+      },
+      "structures": [
+        159
+      ],
+      "structures_include_expired": [
+        159
+      ],
+      "tallies": [
+        85,
+        156,
+        170,
+        173,
+        174,
+        200
+      ],
+      "template_to_assign_id_map": {
+        "5": 20125
+      },
+      "template_to_assign_type_map": {
+        "5": 1
+      },
+      "template_to_default_times_map": {
+        "5": "07:00:00~17:00:00"
+      },
+      "templates": [
+        5
+      ]
+    }
+  ],
+  "departments": [
+    {
+      "compact_name": "Example Person 7",
+      "department_id": 10001,
+      "desc": "Example Department",
+      "is_hidden": false,
+      "medical_specialty": "Example Department",
+      "name": "Example Department",
+      "templates": [
+        {
+          "first_published_date": "2017-03-01T00:00:00",
+          "last_published_date": "2026-06-30T00:00:00",
+          "name": "Example Template",
+          "name_full": "Example Template",
+          "request_horizon_end": "2027-06-30T00:00:00",
+          "request_horizon_start": "2017-03-01T00:00:00",
+          "request_window_end": "2026-12-31T00:00:00",
+          "request_window_start": "2026-07-01T00:00:00",
+          "template_id": 10002
+        },
+        {
+          "first_published_date": "2017-09-01T00:00:00",
+          "last_published_date": "2026-07-31T00:00:00",
+          "name": "Example Template",
+          "name_full": "Example Template",
+          "request_horizon_end": "2027-07-31T00:00:00",
+          "request_horizon_start": "2017-09-01T00:00:00",
+          "request_window_end": "2026-07-20T00:00:00",
+          "request_window_start": "2026-08-01T00:00:00",
+          "template_id": 10003
+        },
+        {
+          "first_published_date": "2017-04-01T00:00:00",
+          "last_published_date": "2017-09-30T00:00:00",
+          "name": "Example Template",
+          "name_full": "Example Template",
+          "request_horizon_end": "2018-09-30T00:00:00",
+          "request_horizon_start": "2017-04-01T00:00:00",
+          "request_window_end": "2017-06-30T00:00:00",
+          "request_window_start": "2017-10-01T00:00:00",
+          "template_id": 10004
+        },
+        {
+          "first_published_date": "2017-03-01T00:00:00",
+          "last_published_date": "2017-09-30T00:00:00",
+          "name": "Example Template",
+          "name_full": "Example Template",
+          "request_horizon_end": "2018-09-30T00:00:00",
+          "request_horizon_start": "2017-03-01T00:00:00",
+          "request_window_end": "2018-09-30T00:00:00",
+          "request_window_start": "2017-10-01T00:00:00",
+          "template_id": 10005
+        }
+      ]
+    }
+  ],
+  "holidays": [
+    {
+      "dept_id": 0,
+      "dept_name": "Example Department",
+      "holiday_date": "2026-05-25T00:00:00",
+      "holiday_id": 20007,
+      "holiday_name": "Memorial Day"
+    }
+  ],
+  "open_shift_sample": [
+    {
+      "assign_atype": 1,
+      "assign_compact_name": "Assignment 4",
+      "assign_display_name": "Assignment 5",
+      "assign_id": 10006,
+      "assign_structure_id": "Assignment 6",
+      "compact_name": "OPEN1",
+      "condensed_structure_id": "Assignment 7",
+      "decision_note": null,
+      "department_id": 10001,
+      "display_name": "OPEN 1",
+      "emp_id": 10007,
+      "emp_ptype": 2,
+      "emp_request_status": null,
+      "has_change": false,
+      "is_default_time": true,
+      "is_manual_slot": true,
+      "is_pending": false,
+      "last_name": "z.Administrative",
+      "note": null,
+      "request_note": null,
+      "sched_id": 10008,
+      "slot_date": "2026-05-09",
+      "slot_id": 10009,
+      "slot_uuid": "f752fb9d-dce4-4f17-99f9-7154a1d4c1da",
+      "start_time": "2026-05-09T21:00:00",
+      "start_time_utc": "2026-05-10T02:00:00",
+      "status": null,
+      "stop_time": "2026-05-10T07:00:00",
+      "stop_time_utc": "2026-05-10T12:00:00",
+      "template": "APP TPC",
+      "template_id": 10002,
+      "work_units": 1.0
+    },
+    {
+      "assign_atype": 1,
+      "assign_compact_name": "Assignment 8",
+      "assign_display_name": "Assignment 9",
+      "assign_id": 10006,
+      "assign_structure_id": "Assignment 10",
+      "compact_name": "OPEN1",
+      "condensed_structure_id": "Assignment 11",
+      "decision_note": null,
+      "department_id": 10001,
+      "display_name": "OPEN 1",
+      "emp_id": 10007,
+      "emp_ptype": 2,
+      "emp_request_status": null,
+      "has_change": false,
+      "is_default_time": true,
+      "is_manual_slot": true,
+      "is_pending": false,
+      "last_name": "z.Administrative",
+      "note": null,
+      "request_note": null,
+      "sched_id": 10008,
+      "slot_date": "2026-05-10",
+      "slot_id": 10010,
+      "slot_uuid": "ba552d88-66f8-4c67-b521-a76d6797e35c",
+      "start_time": "2026-05-10T21:00:00",
+      "start_time_utc": "2026-05-11T02:00:00",
+      "status": null,
+      "stop_time": "2026-05-11T07:00:00",
+      "stop_time_utc": "2026-05-11T12:00:00",
+      "template": "APP TPC",
+      "template_id": 10002,
+      "work_units": 1.0
+    },
+    {
+      "assign_atype": 1,
+      "assign_compact_name": "Assignment 12",
+      "assign_display_name": "Assignment 13",
+      "assign_id": 10006,
+      "assign_structure_id": "Assignment 14",
+      "compact_name": "OPEN1",
+      "condensed_structure_id": "Assignment 15",
+      "decision_note": null,
+      "department_id": 10001,
+      "display_name": "OPEN 1",
+      "emp_id": 10007,
+      "emp_ptype": 2,
+      "emp_request_status": null,
+      "has_change": false,
+      "is_default_time": true,
+      "is_manual_slot": true,
+      "is_pending": false,
+      "last_name": "z.Administrative",
+      "note": null,
+      "request_note": null,
+      "sched_id": 10008,
+      "slot_date": "2026-05-11",
+      "slot_id": 10011,
+      "slot_uuid": "214b917f-7a1f-4519-ad61-1281e7fe3761",
+      "start_time": "2026-05-11T21:00:00",
+      "start_time_utc": "2026-05-12T02:00:00",
+      "status": null,
+      "stop_time": "2026-05-12T07:00:00",
+      "stop_time_utc": "2026-05-12T12:00:00",
+      "template": "APP TPC",
+      "template_id": 10002,
+      "work_units": 1.0
+    }
+  ],
+  "open_slot_count": 8,
+  "permissions_keys": [
+    "customer_id",
+    "emp_id",
+    "user_id",
+    "uses_intersections",
+    "is_admin",
+    "is_super_admin",
+    "is_lbs_user",
+    "is_s1_client",
+    "no_view_access_schedule",
+    "no_view_access_request",
+    "no_view_access_schedule_per_template",
+    "no_view_access_request_per_template",
+    "my_depts",
+    "my_admin_depts",
+    "my_home_depts",
+    "my_secondary_depts",
+    "my_access_role_dept_map",
+    "my_access_role_depts",
+    "data",
+    "user_access_role_id",
+    "can_modify_notifications_settings"
+  ],
+  "personnel_sample": [
+    {
+      "compact_name": "Example Person 8",
+      "departments": [
+        0
+      ],
+      "display_name": "Example Person 9",
+      "emp_id": 10012,
+      "expired": false,
+      "first_name": "Example Person 10",
+      "last_name": "z.Administrative",
+      "ptype_id": 10013,
+      "scheduled": true
+    },
+    {
+      "compact_name": "Example Person 11",
+      "departments": [
+        0
+      ],
+      "display_name": "Example Person 12",
+      "emp_id": 10014,
+      "expired": true,
+      "first_name": "Example Person 13",
+      "last_name": "Example Person 14",
+      "ptype_id": 10013,
+      "scheduled": true
+    },
+    {
+      "compact_name": "Example Person 15",
+      "departments": [
+        0
+      ],
+      "display_name": "Example Person 16",
+      "emp_id": 10015,
+      "expired": true,
+      "first_name": "Example Person 17",
+      "last_name": "Example Person 18",
+      "ptype_id": 10013,
+      "scheduled": true
+    }
+  ],
+  "sanitization_note": "Synthetic public fixture: names, organization labels, and internal IDs replaced; schema shape preserved.",
+  "schedule_data_sample": [
+    {
+      "assign_atype": 1,
+      "assign_compact_name": "Assignment 16",
+      "assign_display_name": "Assignment 17",
+      "assign_id": 10006,
+      "assign_structure_id": "Assignment 18",
+      "compact_name": "Example Person 19",
+      "condensed_structure_id": "Assignment 19",
+      "decision_note": null,
+      "department_id": 10001,
+      "display_name": "Example Person 20",
+      "emp_id": 10016,
+      "emp_ptype": 1,
+      "emp_request_status": null,
+      "has_change": false,
+      "is_default_time": true,
+      "is_manual_slot": true,
+      "is_pending": false,
+      "last_name": "Example Person 21",
+      "note": null,
+      "request_note": null,
+      "sched_id": 10017,
+      "slot_date": "2026-04-26",
+      "slot_id": 10018,
+      "slot_uuid": "e321393a-3bfd-46c4-be65-96a177f64b89",
+      "start_time": "2026-04-26T21:00:00",
+      "start_time_utc": "2026-04-27T02:00:00",
+      "status": null,
+      "stop_time": "2026-04-27T07:00:00",
+      "stop_time_utc": "2026-04-27T12:00:00",
+      "template": "APP TPC",
+      "template_id": 10002,
+      "work_units": 1.0
+    },
+    {
+      "assign_atype": 1,
+      "assign_compact_name": "Assignment 20",
+      "assign_display_name": "Assignment 21",
+      "assign_id": 10006,
+      "assign_structure_id": "Assignment 22",
+      "compact_name": "Example Person 22",
+      "condensed_structure_id": "Assignment 23",
+      "decision_note": null,
+      "department_id": 10001,
+      "display_name": "Example Person 23",
+      "emp_id": 10019,
+      "emp_ptype": 1,
+      "emp_request_status": null,
+      "has_change": false,
+      "is_default_time": true,
+      "is_manual_slot": true,
+      "is_pending": false,
+      "last_name": "Example Person 24",
+      "note": null,
+      "request_note": null,
+      "sched_id": 10017,
+      "slot_date": "2026-04-26",
+      "slot_id": 10020,
+      "slot_uuid": "da7d1546-1bec-433d-9575-4d512388cd2d",
+      "start_time": "2026-04-26T21:00:00",
+      "start_time_utc": "2026-04-27T02:00:00",
+      "status": null,
+      "stop_time": "2026-04-27T07:00:00",
+      "stop_time_utc": "2026-04-27T12:00:00",
+      "template": "APP TPC",
+      "template_id": 10002,
+      "work_units": 1.0
+    },
+    {
+      "assign_atype": 1,
+      "assign_compact_name": "Assignment 24",
+      "assign_display_name": "Assignment 25",
+      "assign_id": 10006,
+      "assign_structure_id": "Assignment 26",
+      "compact_name": "Example Person 25",
+      "condensed_structure_id": "Assignment 27",
+      "decision_note": null,
+      "department_id": 10001,
+      "display_name": "Example Person 26",
+      "emp_id": 10021,
+      "emp_ptype": 1,
+      "emp_request_status": null,
+      "has_change": false,
+      "is_default_time": true,
+      "is_manual_slot": true,
+      "is_pending": false,
+      "last_name": "Example Person 27",
+      "note": null,
+      "request_note": null,
+      "sched_id": 10017,
+      "slot_date": "2026-04-26",
+      "slot_id": 10022,
+      "slot_uuid": "69876fae-2e4d-418b-8b3d-8ceefaa5fe3f",
+      "start_time": "2026-04-26T21:00:00",
+      "start_time_utc": "2026-04-27T02:00:00",
+      "status": null,
+      "stop_time": "2026-04-27T07:00:00",
+      "stop_time_utc": "2026-04-27T12:00:00",
+      "template": "APP TPC",
+      "template_id": 10002,
+      "work_units": 1.0
+    }
+  ],
+  "schedule_data_slot_count": 2591,
+  "user_settings": {
+    "settings": {
+      "default_template": 5,
+      "default_view": "me"
+    },
+    "settings_id": 161
+  },
+  "view_context": {
+    "accessible_by": [
+      10023,
+      10024,
+      10025
+    ],
+    "created_at": "2017-04-03T15:23:56",
+    "created_by": 10026,
+    "filter": {
+      "assignment_expression": null,
+      "auto_add_assignments": true,
+      "auto_add_personnel": true,
+      "created_at": "2025-12-16T17:49:58",
+      "created_by": 10026,
+      "filter_id": 10027,
+      "name": "Example Department",
+      "on_assignments": [
+        {
+          "assignmentStructure": null,
+          "color": "#f15757",
+          "colorText": "#000000",
+          "id": 10028
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10029
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#9575cd",
+          "colorText": "#000000",
+          "id": 10030
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#9575cd",
+          "colorText": "#000000",
+          "id": 10031
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f15757",
+          "colorText": "#000000",
+          "id": 10032
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10033
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10034
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10035
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10036
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f15757",
+          "colorText": "#000000",
+          "id": 10037
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10038
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10039
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10040
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10041
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10042
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10043
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10044
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10045
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10046
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10047
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10048
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10049
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10050
+        },
+        {
+          "assignmentStructure": null,
+          "color": null,
+          "colorText": null,
+          "id": 10051
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10052
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10053
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10054
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10055
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10056
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10057
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10058
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10059
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10060
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10061
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10062
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10063
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f1dd0c",
+          "colorText": "#000000",
+          "id": 10064
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#b2dfdb",
+          "colorText": "#000000",
+          "id": 10065
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#b2dfdb",
+          "colorText": "#000000",
+          "id": 10066
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10067
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10068
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10069
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10070
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10071
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10072
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10073
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10074
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10075
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10076
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10077
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10078
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10079
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10080
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10081
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10082
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10083
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10084
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10085
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10086
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10087
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10088
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10089
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10090
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10091
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10092
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10093
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10094
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10095
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10096
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4fc3f7",
+          "colorText": "#0b0c0c",
+          "id": 10097
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#1976d2",
+          "colorText": "#000000",
+          "id": 10098
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#1976d2",
+          "colorText": "#000000",
+          "id": 10099
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#1976d2",
+          "colorText": "#000000",
+          "id": 10100
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#1976d2",
+          "colorText": "#000000",
+          "id": 10101
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#1976d2",
+          "colorText": "#000000",
+          "id": 10102
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#1976d2",
+          "colorText": "#000000",
+          "id": 10103
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#1976d2",
+          "colorText": "#000000",
+          "id": 10104
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4caf50",
+          "colorText": "#000000",
+          "id": 10105
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4caf50",
+          "colorText": "#000000",
+          "id": 10106
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4caf50",
+          "colorText": "#000000",
+          "id": 10107
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4caf50",
+          "colorText": "#000000",
+          "id": 10108
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4caf50",
+          "colorText": "#000000",
+          "id": 10109
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4caf50",
+          "colorText": "#000000",
+          "id": 10110
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4caf50",
+          "colorText": "#000000",
+          "id": 10111
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4caf50",
+          "colorText": "#000000",
+          "id": 10112
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#c8e6c9",
+          "colorText": "#191a19",
+          "id": 10113
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#c8e6c9",
+          "colorText": "#191a19",
+          "id": 10114
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#c8e6c9",
+          "colorText": "#191a19",
+          "id": 10115
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#c8e6c9",
+          "colorText": "#191a19",
+          "id": 10116
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#c8e6c9",
+          "colorText": "#191a19",
+          "id": 10117
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#c8e6c9",
+          "colorText": "#191a19",
+          "id": 10118
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#c8e6c9",
+          "colorText": "#191a19",
+          "id": 10119
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#c8e6c9",
+          "colorText": "#191a19",
+          "id": 10120
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#4db6ac",
+          "colorText": "#232524",
+          "id": 10121
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#90a4ae",
+          "colorText": "#000000",
+          "id": 10122
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#90a4ae",
+          "colorText": "#000000",
+          "id": 10123
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#90a4ae",
+          "colorText": "#000000",
+          "id": 10124
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#f06292",
+          "colorText": "#000000",
+          "id": 10125
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#d32f2f",
+          "colorText": "#000000",
+          "id": 10126
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#d7ccc8",
+          "colorText": "#000000",
+          "id": 10127
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#d7ccc8",
+          "colorText": "#000000",
+          "id": 10128
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#d7ccc8",
+          "colorText": "#000000",
+          "id": 10129
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#d7ccc8",
+          "colorText": "#000000",
+          "id": 10130
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#d7ccc8",
+          "colorText": "#000000",
+          "id": 10131
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#d7ccc8",
+          "colorText": "#000000",
+          "id": 10132
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#d7ccc8",
+          "colorText": "#000000",
+          "id": 10133
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#d7ccc8",
+          "colorText": "#000000",
+          "id": 10134
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#e1bee7",
+          "colorText": "#000000",
+          "id": 10135
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#e1bee7",
+          "colorText": "#000000",
+          "id": 10136
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#e1bee7",
+          "colorText": "#000000",
+          "id": 10137
+        },
+        {
+          "assignmentStructure": null,
+          "color": null,
+          "colorText": null,
+          "id": 10138
+        },
+        {
+          "assignmentStructure": null,
+          "color": null,
+          "colorText": null,
+          "id": 10139
+        },
+        {
+          "assignmentStructure": null,
+          "color": "#81c784",
+          "colorText": null,
+          "id": 10140
+        },
+        {
+          "assignmentStructure": null,
+          "color": null,
+          "colorText": null,
+          "id": 10141
+        },
+        {
+          "assignmentStructure": null,
+          "color": null,
+          "colorText": null,
+          "id": 10142
+        }
+      ],
+      "on_departments": [
+        0
+      ],
+      "on_personnel": [
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10143
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10144
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10145
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10146
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10147
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10148
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10149
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10150
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10151
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10152
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10153
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10154
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10155
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10156
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10157
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10158
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10159
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10160
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10161
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10162
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10163
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10164
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10165
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10166
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10167
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10168
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10169
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10170
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10171
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10172
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10173
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10174
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10175
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10176
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10177
+        },
+        {
+          "color": null,
+          "colorText": "#1976d2",
+          "id": 10178
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10179
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10180
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10181
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10182
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10183
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10184
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10185
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10186
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10187
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10188
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10189
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10190
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10191
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10192
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10193
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10194
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10195
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10196
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10197
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10198
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10199
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10200
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10201
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10202
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10203
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10204
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10205
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10206
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10207
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10208
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10209
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10210
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10211
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10212
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10213
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10214
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10215
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10216
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10217
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10218
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10219
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10220
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10221
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10222
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10223
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10224
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10225
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10226
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10227
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10228
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10229
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10230
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10231
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10232
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10233
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10234
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10235
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10236
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10237
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10238
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10239
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10240
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10241
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10242
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10243
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10244
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10245
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10246
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10247
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10248
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10249
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10250
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10251
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10252
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10253
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10254
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10255
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10256
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10257
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10258
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10259
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10260
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10261
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10262
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10263
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10264
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10265
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10266
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10267
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10268
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10269
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10270
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10271
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10272
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10273
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10274
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10275
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10276
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10277
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10278
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10279
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10280
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10281
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10282
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10283
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10284
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10285
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10286
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10287
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10288
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10289
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10290
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10291
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10292
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10293
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10294
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10295
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10296
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10297
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10298
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10299
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10300
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10301
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10302
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10303
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10304
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10305
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10306
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10307
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10308
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10309
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10310
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10311
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10312
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10313
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10314
+        },
+        {
+          "color": null,
+          "colorText": "#a60303",
+          "id": 10315
+        },
+        {
+          "color": null,
+          "colorText": "#a60303",
+          "id": 10316
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10317
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10318
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10319
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10320
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10321
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10322
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10323
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10324
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10325
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10326
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10327
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10328
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10329
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10330
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10331
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10332
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10333
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10334
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10335
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10336
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10337
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10338
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10339
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10340
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10341
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10342
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10343
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10344
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10345
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10346
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10347
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10348
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10349
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10350
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10351
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10352
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10353
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10354
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10355
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10356
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10357
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10358
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10359
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10360
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10361
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10362
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10363
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10364
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10365
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10366
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10367
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10368
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10369
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10370
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10371
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10372
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10373
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10374
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10375
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10376
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10377
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10378
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10379
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10380
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10381
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10382
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10383
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10384
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10385
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10386
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10387
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10388
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10389
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10390
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10391
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10392
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10393
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10394
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10395
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10396
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10397
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10398
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10399
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10400
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10401
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10402
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10403
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10404
+        },
+        {
+          "color": null,
+          "colorText": "#0d0d0d",
+          "id": 10405
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10406
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10407
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10408
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10409
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10410
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10411
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10412
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10413
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10414
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10415
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10416
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10417
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10418
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10419
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10420
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10421
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10422
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10423
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10424
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10425
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10426
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10427
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10428
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10429
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10430
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10431
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10432
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10433
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10434
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10435
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10436
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10437
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10438
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10439
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10440
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10441
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10442
+        },
+        {
+          "color": null,
+          "colorText": null,
+          "id": 10443
+        }
+      ],
+      "on_tallies": [],
+      "on_templates": [
+        4,
+        5
+      ],
+      "personnel_expression": null,
+      "sort_assignments_by": "custom order",
+      "sort_personnel_by": "last name",
+      "updated_at": "0001-01-01T00:00:00"
+    },
+    "filter_id": 10027,
+    "name": "Example View",
+    "theme": {
+      "created_at": "2017-02-13T09:35:53",
+      "created_by": 10444,
+      "data": {
+        "GridSettings_leftColumnType": "assignment",
+        "blockAnchorDate": "2019-12-10",
+        "blockLength": "1",
+        "blockStart": "Mon",
+        "blockStaticStart": "2020-01-01",
+        "blockStaticStop": "2020-12-31",
+        "blockViewTotalWeeks": 4,
+        "blockWeekLength": "4",
+        "colorMethod": "mixed",
+        "colorTextMethod": "colored",
+        "compactMode": "no",
+        "dataType": "combined",
+        "hideBlankRows": "yes",
+        "hidePending": "no",
+        "hideWeekends": "no",
+        "layout": "hybrid",
+        "listColumns": [],
+        "range": "month",
+        "showLoggedInOnly": "no",
+        "showTimes": "no",
+        "startOnDay": "Mon"
+      },
+      "name": "Example Department",
+      "theme_id": 10445,
+      "updated_at": "2020-03-13T12:49:00"
+    },
+    "theme_id": 10445,
+    "updated_at": "2025-07-17T20:33:17",
+    "view_id": 123
+  }
+}
