@@ -588,6 +588,7 @@ async def test_who_is_working_and_open_shifts_return_compact_limited_results() -
         coverage_with_workers = await client.who_is_working(
             start_date="20260506",
             end_date="20260513",
+            detail_level="summary",
             include_workers=True,
             max_results=1,
         )
@@ -600,7 +601,10 @@ async def test_who_is_working_and_open_shifts_return_compact_limited_results() -
 
     assert coverage.metadata.total_matches == 2
     assert coverage.metadata.returned == 0
-    assert coverage.days[0].template_counts == {"A": 1, "B": 1}
+    assert coverage.days[0].template_counts == {}
+    assert coverage.days[0].assignment_counts == {}
+    assert coverage_with_workers.days[0].template_counts == {"A": 1, "B": 1}
+    assert coverage_with_workers.days[0].assignment_counts == {}
     assert coverage_with_workers.metadata.returned == 1
     assert coverage_with_workers.metadata.truncated is True
     assert coverage_with_workers.days[0].workers[0].display_name == "One"

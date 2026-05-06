@@ -212,10 +212,11 @@ Finds overlapping shifts between two employees. `employee_a` defaults to the con
 authenticated employee. Uses employee-specific schedule reads and returns only overlap
 rows and overlap dates.
 
-### `lb_who_is_working(start_date, end_date, view_id?, template_ids?, template_query?, assignment_query?, include_open=false, include_workers=false, max_results=200, fields?, tz?)`
+### `lb_who_is_working(start_date, end_date, view_id?, template_ids?, template_query?, assignment_query?, include_open=false, detail_level="count", include_workers=false, max_results=200, fields?, tz?)`
 
-Summarizes coverage by date. By default it returns counts grouped by template/assignment,
-not worker rows. Set `include_workers=true` only when names or rows are needed.
+Summarizes coverage by date. By default it returns only per-date counts. Use
+`detail_level="summary"` for template counts and `detail_level="assignments"` for
+assignment counts. Set `include_workers=true` only when names or rows are needed.
 
 ### `lb_list_open_shifts(start_date, end_date, view_id?, template_ids?, template_query?, assignment_query?, detail_level="dates", max_results=200, fields?, tz?)`
 
@@ -225,10 +226,10 @@ Returns compact open-shift rows and count metadata.
 
 Date-only shortcut for open shifts.
 
-### `lb_who_is_working_with(employee, start_date, end_date, view_id?, template_query?, assignment_query?, include_workers=false, max_results=200, fields?, tz?)`
+### `lb_who_is_working_with(employee, start_date, end_date, view_id?, template_query?, assignment_query?, detail_level="count", include_workers=false, max_results=200, fields?, tz?)`
 
 Finds the employee's shift dates with the employee-specific endpoint, then summarizes
-workers on those same dates.
+workers on those same dates. Default output is count-only per date.
 
 ### `lb_get_next_my_shifts(count=5, search_days=90)`
 

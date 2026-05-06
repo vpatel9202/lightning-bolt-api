@@ -635,11 +635,14 @@ class LightningBoltClient:
         template_query: str | None = None,
         assignment_query: str | None = None,
         include_open: bool = False,
+        detail_level: str = "count",
         include_workers: bool = False,
         max_results: int = 200,
         fields: list[str] | None = None,
         tz: str | None = None,
     ) -> DailyCoverageSummary:
+        if detail_level not in {"count", "summary", "assignments"}:
+            raise ValueError("detail_level must be one of: count, summary, assignments.")
         slots = await self.fetch_schedule(
             view_id=view_id,
             start_date=start_date,
@@ -668,8 +671,12 @@ class LightningBoltClient:
             DailyCoverage(
                 date=slot_date,
                 working_count=len(day_slots),
-                template_counts=_count_by_template(day_slots),
-                assignment_counts=_count_by_assignment(day_slots),
+                template_counts=_count_by_template(day_slots)
+                if detail_level in {"summary", "assignments"}
+                else {},
+                assignment_counts=_count_by_assignment(day_slots)
+                if detail_level == "assignments"
+                else {},
                 workers=grouped.get(slot_date, []),
             )
             for slot_date, day_slots in sorted(count_groups.items())
@@ -833,11 +840,14 @@ class LightningBoltClient:
         view_id: int | None = None,
         template_query: str | None = None,
         assignment_query: str | None = None,
+        detail_level: str = "count",
         include_workers: bool = False,
         max_results: int = 200,
         fields: list[str] | None = None,
         tz: str | None = None,
     ) -> DailyCoverageSummary:
+        if detail_level not in {"count", "summary", "assignments"}:
+            raise ValueError("detail_level must be one of: count, summary, assignments.")
         emp_id = await self._resolve_employee_arg(employee)
         employee_slots = await self.fetch_personal_schedule(
             emp_id=emp_id,
@@ -883,8 +893,12 @@ class LightningBoltClient:
                 DailyCoverage(
                     date=slot_date,
                     working_count=len(day_slots),
-                    template_counts=_count_by_template(day_slots),
-                    assignment_counts=_count_by_assignment(day_slots),
+                    template_counts=_count_by_template(day_slots)
+                    if detail_level in {"summary", "assignments"}
+                    else {},
+                    assignment_counts=_count_by_assignment(day_slots)
+                    if detail_level == "assignments"
+                    else {},
                     workers=grouped.get(slot_date, []),
                 )
                 for slot_date, day_slots in sorted(count_groups.items())

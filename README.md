@@ -94,6 +94,7 @@ uv run lb-api employee-shifts "halfast" --start 20260501 --end 20260531 --detail
 uv run lb-api count-shifts "halfast" --start 20260501 --end 20260531 --group-by date
 uv run lb-api overlaps "halfast" --start 20260501 --end 20260531 --detail-level dates
 uv run lb-api who-is-working --start 20260501 --end 20260501
+uv run lb-api who-is-working --start 20260501 --end 20260501 --detail-level summary
 uv run lb-api open-shift-dates --start 20260501 --end 20260531
 uv run lb-api open-shifts --start 20260501 --end 20260531 --detail-level compact
 uv run lb-api working-with "halfast" --start 20260501 --end 20260531
@@ -111,6 +112,8 @@ uv run lb-api find-employee "patel"
 ```
 
 Prefer date/count commands for normal use. Use `--detail-level compact` when shift rows are
+needed. Coverage tools default to per-date counts; use `--detail-level summary` for
+template counts and `--detail-level assignments` only when assignment breakdowns are
 needed. Compact commands cap large result sets by default and expose `--max-results` /
 `--offset` where appropriate. `viewerapi` and `schedule` are low-level debugging/export
 commands and may produce large JSON payloads.

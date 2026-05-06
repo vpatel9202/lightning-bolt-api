@@ -464,6 +464,9 @@ def who_is_working(
         str | None, typer.Option("--assignment-query", help="Filter by assignment name/id.")
     ] = None,
     include_open: Annotated[bool, typer.Option(help="Include open shifts.")] = False,
+    detail_level: Annotated[
+        str, typer.Option("--detail-level", help="One of: count, summary, assignments.")
+    ] = "count",
     include_workers: Annotated[bool, typer.Option(help="Include compact worker rows.")] = False,
     max_results: Annotated[
         int, typer.Option("--max-results", help="Maximum compact worker rows to return.")
@@ -489,6 +492,7 @@ def who_is_working(
                     template_query=template_query,
                     assignment_query=assignment_query,
                     include_open=include_open,
+                    detail_level=detail_level,
                     include_workers=include_workers,
                     max_results=max_results,
                     fields=field,
@@ -567,6 +571,9 @@ def working_with(
     assignment_query: Annotated[
         str | None, typer.Option("--assignment-query", help="Filter by assignment name/id.")
     ] = None,
+    detail_level: Annotated[
+        str, typer.Option("--detail-level", help="One of: count, summary, assignments.")
+    ] = "count",
     include_workers: Annotated[bool, typer.Option(help="Include compact worker rows.")] = False,
     max_results: Annotated[
         int, typer.Option("--max-results", help="Maximum compact coworker rows to return.")
@@ -591,6 +598,7 @@ def working_with(
                     view_id=view_id,
                     template_query=template_query,
                     assignment_query=assignment_query,
+                    detail_level=detail_level,
                     include_workers=include_workers,
                     max_results=max_results,
                     fields=field,
