@@ -1,4 +1,13 @@
-# Lightning Bolt API Investigation Findings
+# Historical Investigation Findings
+
+This document records the live reverse-engineering findings that informed
+`lightning-bolt-api`. It is historical background, not the primary usage guide.
+
+For current usage, see:
+
+- [README.md](../README.md)
+- [Architecture](architecture.md)
+- [MCP Server](mcp.md)
 
 Source: live investigation performed on 2026-05-06 using Chrome DevTools MCP and direct
 replay validation with Python urllib. Raw captures with PII were intentionally left out of

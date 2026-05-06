@@ -1,44 +1,68 @@
 # AGENTS.md
 
-This repo is the durable handoff context for building `lightning-bolt-api`.
+This repo is the durable handoff context for maintaining `lightning-bolt-api`.
 
 ## Mission
 
-Build a reusable Python library, CLI, and MCP server for read-only access to Lightning
+Maintain a reusable Python library, CLI, and MCP server for read-only access to Lightning
 Bolt's reverse-engineered API. The library should return useful normalized data while
 preserving raw Lightning Bolt JSON. It should not own downstream business logic.
+
+## Current State
+
+The v1 implementation is built and pushed.
+
+Implemented:
+
+- Direct HTTP authentication with `httpx.AsyncClient`.
+- Session cache persistence for auth/session state.
+- Refresh-token rotation with serialized refresh.
+- Dashboard, ViewerAPI, personal schedule range, subscription, and employee feed reads.
+- Self-bootstrapping view discovery when `LB_DEFAULT_VIEW_ID` is not set.
+- Pydantic models with preserved `raw` payloads.
+- `lb-api` CLI.
+- `lb-api-mcp` server over stdio and streamable HTTP.
+- Docker image for HTTP MCP mode.
+- Mocked tests for auth, parsing, CLI, MCP registration, and discovery behavior.
+
+Start with:
+
+- `README.md` for user-facing setup and examples.
+- `docs/architecture.md` for how the implemented system works.
+- `docs/mcp.md` for MCP operation and tool reference.
+- `docs/investigation-findings.md` for historical reverse-engineering evidence.
+- `fixtures/sanitized_viewerapi_view50.json` for public parser fixture data.
 
 ## Critical Context
 
 This repo was split out from `LBOpenShiftFinder`, which is a personal open-shift/calendar
 sync app. Do not reintroduce calendar sync, iCal parsing, Google Calendar, provider
-classification, or notification logic here.
+classification, notification logic, or organization-specific scheduling policy here.
 
-Claude/Opus performed a live investigation using Chrome DevTools MCP and direct replay.
-The most important result: normal operation does not need Playwright or DOM scraping.
-Lightning Bolt's SPA is a thin layer over JSON endpoints. Direct HTTP auth and API calls
-work.
+The most important investigation result is that normal operation does not need Playwright
+or DOM scraping. Lightning Bolt's SPA is a thin layer over JSON endpoints. Direct HTTP
+auth and API calls work.
 
-Read before implementing:
+Chrome DevTools MCP or Playwright MCP may be useful for revalidating Lightning Bolt
+behavior if the site changes, but browser automation must not become the normal runtime
+path unless the project direction explicitly changes.
 
-- `docs/investigation-findings.md`
-- `docs/implementation-plan.md`
-- `fixtures/sanitized_viewerapi_view50.json`
-
-## Architecture Decisions Already Made
+## Architecture Decisions
 
 - Python 3.12+.
 - `uv` project.
 - Package import name: `lightning_bolt_api`.
 - CLI command: `lb-api`.
 - MCP command: `lb-api-mcp`.
-- Async internals with sync wrappers later.
-- Direct HTTP auth first; no Playwright in the normal path.
-- Session cache is allowed; scrape/export data persistence is not automatic.
-- Raw payload preservation is required.
+- Async internals.
+- Direct HTTP auth first.
 - Read-only v1.
+- Session cache is allowed; schedule/export persistence is not automatic.
+- Raw payload preservation is required.
 - Host and Docker MCP support.
-- MCP should support stdio and streamable HTTP.
+- MCP supports stdio and streamable HTTP.
+- Credentials/session come from environment variables or mounted secrets, not MCP tool
+  arguments.
 
 ## API Findings To Preserve
 
@@ -49,7 +73,8 @@ Auth:
 - `POST https://lbapi.lightning-bolt.com/token` exchanges the refresh token for a 1-hour JWT.
 - Refresh tokens rotate and are single-use.
 - Always send `Origin: https://lblite.lightning-bolt.com`.
-- Request gzip and defensively parse JSON-encoded string fields in dashboard responses.
+- Request gzip/deflate and defensively parse JSON-encoded string fields in dashboard
+  responses.
 
 Primary data:
 
@@ -59,6 +84,7 @@ Primary data:
   - `tz`
   - `start_date`
   - `end_date`
+- `view_id` can be omitted for Lightning Bolt's default viewer context.
 - Dates must be `YYYYMMDD`. Reject ISO strings for request params.
 - The response includes schedule slots, personnel, assignments, departments/templates,
   holidays, settings, permissions, and view context.
@@ -80,56 +106,25 @@ Other read endpoints:
 - No automatic generated export storage.
 - No hardcoded organization-specific template IDs or provider assumptions.
 
-## Implementation Plan
+## Maintenance Workflow
 
-1. Build HTTP/auth layer.
-   - Use `httpx.AsyncClient`.
-   - Implement the 5-hop login and `/token` exchange.
-   - Parse JWT expiry without verifying the signature.
-   - Serialize token refresh with an async lock.
-   - Add user-cache-dir session persistence with strict file permissions where possible.
+Run checks before committing:
 
-2. Build parsing/model layer.
-   - Add model constructors from raw dashboard/viewerapi objects.
-   - Preserve `raw` on all normalized models.
-   - Add date validation utilities.
-   - Add defensive dashboard string-field JSON decoding.
+```bash
+UV_CACHE_DIR=/tmp/uv-cache uv run pytest
+UV_CACHE_DIR=/tmp/uv-cache uv run ruff check .
+```
 
-3. Build endpoint client.
-   - Dashboard.
-   - ViewerAPI.
-   - Views/templates derived from dashboard/viewerapi.
-   - Personal schedule range.
-   - Subscription metadata.
-   - Employee feed.
+For live validation, use a small date range first:
 
-4. Build CLI.
-   - JSON stdout by default.
-   - Optional `--output`.
-   - Never write scrape output unless explicitly requested.
-   - Never print secrets.
+```bash
+uv run lb-api login
+uv run lb-api discover
+uv run lb-api schedule --start 20260501 --end 20260507
+```
 
-5. Build MCP server.
-   - Same core client as CLI.
-   - stdio and streamable HTTP.
-   - Credentials/session via env vars or mounted secrets, not normal tool arguments.
-   - Tool responses compact normalized JSON by default; optional `include_raw`.
-
-6. Build Docker support.
-   - Multi-stage Dockerfile with `uv`.
-   - Default command should run HTTP MCP.
-   - Document host and Docker launch examples.
-
-7. Tests.
-   - Mocked auth chain.
-   - Refresh rotation and locking behavior.
-   - Dashboard JSON-string quirk.
-   - Date validation.
-   - ViewerAPI fixture parsing.
-   - Slot helper properties.
-   - CLI mocked outputs.
-   - MCP tool registration.
-   - Docker smoke test if feasible.
+Live validation can update the ignored session cache. It must not create tracked raw
+captures, secrets, or unsanitized data.
 
 ## Security Rules
 
@@ -137,12 +132,6 @@ Other read endpoints:
   unsanitized personnel data.
 - Do not log auth response bodies.
 - Do not include credentials as MCP tool arguments by default.
-- Keep sanitized fixtures small and clearly marked. Public fixtures must use synthetic names
-  and synthetic internal IDs.
-- Public repo means all durable docs must avoid private patient/provider data and secrets.
-
-## Current Scaffold Status
-
-The repo currently contains placeholder client/CLI/MCP modules and initial models. Most
-methods intentionally raise `NotImplementedError`. The first real implementation task is
-the direct HTTP auth/session layer.
+- Keep sanitized fixtures small and clearly marked.
+- Public fixtures must use synthetic names and synthetic internal IDs.
+- Public docs must avoid private patient/provider data and secrets.
