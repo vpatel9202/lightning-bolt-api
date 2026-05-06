@@ -188,6 +188,17 @@ def schedule(
     template_id: Annotated[
         list[int] | None, typer.Option("--template-id", help="Filter by template ID.")
     ] = None,
+    template_query: Annotated[
+        str | None, typer.Option("--template-query", help="Filter by template name/id.")
+    ] = None,
+    assignment_query: Annotated[
+        str | None, typer.Option("--assignment-query", help="Filter by assignment name/id.")
+    ] = None,
+    max_results: Annotated[
+        int | None,
+        typer.Option("--max-results", help="Maximum compact slots to return. Use 0 for all."),
+    ] = 200,
+    offset: Annotated[int, typer.Option("--offset", help="Pagination offset.")] = 0,
     tz: Annotated[str | None, typer.Option("--tz", help="IANA timezone.")] = None,
     output: Annotated[
         Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
@@ -201,11 +212,15 @@ def schedule(
     async def run() -> Any:
         async with LightningBoltClient.from_env() as client:
             return model_to_jsonable(
-                await client.fetch_schedule(
+                await client.summarize_schedule_range(
                     view_id=view_id,
                     start_date=start,
                     end_date=end,
                     template_ids=template_id,
+                    template_query=template_query,
+                    assignment_query=assignment_query,
+                    max_results=max_results,
+                    offset=offset,
                     tz=tz,
                 ),
                 include_raw=include_raw,
@@ -247,9 +262,15 @@ def my_shifts(
     include_details: Annotated[
         bool, typer.Option(help="Include compact shift details instead of counts only.")
     ] = True,
+    detail_level: Annotated[
+        str | None, typer.Option("--detail-level", help="One of: count, dates, compact.")
+    ] = None,
     max_results: Annotated[
         int, typer.Option("--max-results", help="Maximum compact shifts to return.")
     ] = 200,
+    field: Annotated[
+        list[str] | None, typer.Option("--field", help="Compact slot field to include.")
+    ] = None,
     output: Annotated[
         Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
     ] = None,
@@ -263,7 +284,9 @@ def my_shifts(
                     start_date=start,
                     end_date=end,
                     include_details=include_details,
+                    detail_level=detail_level,
                     max_results=max_results,
+                    fields=field,
                 ),
                 include_raw=False,
             )
@@ -279,9 +302,15 @@ def employee_shifts(
     include_details: Annotated[
         bool, typer.Option(help="Include compact shift details instead of counts only.")
     ] = True,
+    detail_level: Annotated[
+        str | None, typer.Option("--detail-level", help="One of: count, dates, compact.")
+    ] = None,
     max_results: Annotated[
         int, typer.Option("--max-results", help="Maximum compact shifts to return.")
     ] = 200,
+    field: Annotated[
+        list[str] | None, typer.Option("--field", help="Compact slot field to include.")
+    ] = None,
     output: Annotated[
         Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
     ] = None,
@@ -296,7 +325,9 @@ def employee_shifts(
                     start_date=start,
                     end_date=end,
                     include_details=include_details,
+                    detail_level=detail_level,
                     max_results=max_results,
+                    fields=field,
                 ),
                 include_raw=False,
             )
@@ -310,7 +341,7 @@ def count_shifts(
     start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
     end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
     group_by: Annotated[
-        str, typer.Option("--group-by", help="One of: none, date, template.")
+        str, typer.Option("--group-by", help="One of: none, date, template, assignment, person.")
     ] = "none",
     output: Annotated[
         Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
@@ -333,6 +364,47 @@ def count_shifts(
     _emit(asyncio.run(run()), output)
 
 
+@app.command("my-shift-dates")
+def my_shift_dates(
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Fetch the configured/authenticated employee's shift dates."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_my_shift_dates(start_date=start, end_date=end),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("employee-shift-dates")
+def employee_shift_dates(
+    employee: Annotated[str, typer.Argument(help="Employee ID or fuzzy name.")],
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Fetch one employee's shift dates."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_employee_shift_dates(employee, start_date=start, end_date=end),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
 @app.command("overlaps")
 def overlaps(
     employee_b: Annotated[str, typer.Argument(help="Second employee ID or fuzzy name.")],
@@ -342,9 +414,15 @@ def overlaps(
         str | None,
         typer.Option("--employee-a", help="First employee ID or fuzzy name. Defaults to me."),
     ] = None,
+    detail_level: Annotated[
+        str, typer.Option("--detail-level", help="One of: count, dates, compact.")
+    ] = "compact",
     max_results: Annotated[
         int, typer.Option("--max-results", help="Maximum overlap rows to return.")
     ] = 200,
+    field: Annotated[
+        list[str] | None, typer.Option("--field", help="Compact slot field to include.")
+    ] = None,
     output: Annotated[
         Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
     ] = None,
@@ -359,7 +437,9 @@ def overlaps(
                     employee_b,
                     start_date=start,
                     end_date=end,
+                    detail_level=detail_level,
                     max_results=max_results,
+                    fields=field,
                 ),
                 include_raw=False,
             )
@@ -377,10 +457,20 @@ def who_is_working(
     template_id: Annotated[
         list[int] | None, typer.Option("--template-id", help="Filter by template ID.")
     ] = None,
+    template_query: Annotated[
+        str | None, typer.Option("--template-query", help="Filter by template name/id.")
+    ] = None,
+    assignment_query: Annotated[
+        str | None, typer.Option("--assignment-query", help="Filter by assignment name/id.")
+    ] = None,
     include_open: Annotated[bool, typer.Option(help="Include open shifts.")] = False,
+    include_workers: Annotated[bool, typer.Option(help="Include compact worker rows.")] = False,
     max_results: Annotated[
         int, typer.Option("--max-results", help="Maximum compact worker rows to return.")
     ] = 200,
+    field: Annotated[
+        list[str] | None, typer.Option("--field", help="Compact slot field to include.")
+    ] = None,
     tz: Annotated[str | None, typer.Option("--tz", help="IANA timezone.")] = None,
     output: Annotated[
         Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
@@ -396,8 +486,12 @@ def who_is_working(
                     end_date=end,
                     view_id=view_id,
                     template_ids=template_id,
+                    template_query=template_query,
+                    assignment_query=assignment_query,
                     include_open=include_open,
+                    include_workers=include_workers,
                     max_results=max_results,
+                    fields=field,
                     tz=tz,
                 ),
                 include_raw=False,
@@ -416,9 +510,21 @@ def open_shifts(
     template_id: Annotated[
         list[int] | None, typer.Option("--template-id", help="Filter by template ID.")
     ] = None,
+    template_query: Annotated[
+        str | None, typer.Option("--template-query", help="Filter by template name/id.")
+    ] = None,
+    assignment_query: Annotated[
+        str | None, typer.Option("--assignment-query", help="Filter by assignment name/id.")
+    ] = None,
+    detail_level: Annotated[
+        str, typer.Option("--detail-level", help="One of: count, dates, compact.")
+    ] = "compact",
     max_results: Annotated[
         int, typer.Option("--max-results", help="Maximum open shifts to return.")
     ] = 200,
+    field: Annotated[
+        list[str] | None, typer.Option("--field", help="Compact slot field to include.")
+    ] = None,
     tz: Annotated[str | None, typer.Option("--tz", help="IANA timezone.")] = None,
     output: Annotated[
         Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
@@ -434,7 +540,11 @@ def open_shifts(
                     end_date=end,
                     view_id=view_id,
                     template_ids=template_id,
+                    template_query=template_query,
+                    assignment_query=assignment_query,
+                    detail_level=detail_level,
                     max_results=max_results,
+                    fields=field,
                     tz=tz,
                 ),
                 include_raw=False,
@@ -451,9 +561,19 @@ def working_with(
     view_id: Annotated[
         int | None, typer.Option("--view-id", help="Lightning Bolt view ID.")
     ] = None,
+    template_query: Annotated[
+        str | None, typer.Option("--template-query", help="Filter by template name/id.")
+    ] = None,
+    assignment_query: Annotated[
+        str | None, typer.Option("--assignment-query", help="Filter by assignment name/id.")
+    ] = None,
+    include_workers: Annotated[bool, typer.Option(help="Include compact worker rows.")] = False,
     max_results: Annotated[
         int, typer.Option("--max-results", help="Maximum compact coworker rows to return.")
     ] = 200,
+    field: Annotated[
+        list[str] | None, typer.Option("--field", help="Compact slot field to include.")
+    ] = None,
     tz: Annotated[str | None, typer.Option("--tz", help="IANA timezone.")] = None,
     output: Annotated[
         Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
@@ -469,9 +589,129 @@ def working_with(
                     start_date=start,
                     end_date=end,
                     view_id=view_id,
+                    template_query=template_query,
+                    assignment_query=assignment_query,
+                    include_workers=include_workers,
+                    max_results=max_results,
+                    fields=field,
+                    tz=tz,
+                ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("open-shift-dates")
+def open_shift_dates(
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    view_id: Annotated[
+        int | None, typer.Option("--view-id", help="Lightning Bolt view ID.")
+    ] = None,
+    template_id: Annotated[
+        list[int] | None, typer.Option("--template-id", help="Filter by template ID.")
+    ] = None,
+    template_query: Annotated[
+        str | None, typer.Option("--template-query", help="Filter by template name/id.")
+    ] = None,
+    assignment_query: Annotated[
+        str | None, typer.Option("--assignment-query", help="Filter by assignment name/id.")
+    ] = None,
+    max_results: Annotated[
+        int, typer.Option("--max-results", help="Maximum open shifts to inspect.")
+    ] = 200,
+    tz: Annotated[str | None, typer.Option("--tz", help="IANA timezone.")] = None,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """List dates with open shifts."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_open_shift_dates(
+                    start_date=start,
+                    end_date=end,
+                    view_id=view_id,
+                    template_ids=template_id,
+                    template_query=template_query,
+                    assignment_query=assignment_query,
                     max_results=max_results,
                     tz=tz,
                 ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("next-my-shifts")
+def next_my_shifts(
+    count: Annotated[int, typer.Option("--count", help="Number of shifts to return.")] = 5,
+    search_days: Annotated[
+        int, typer.Option("--search-days", help="Days ahead to search.")
+    ] = 90,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Fetch the next shifts for the configured/authenticated employee."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_next_my_shifts(count=count, search_days=search_days),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("next-employee-shifts")
+def next_employee_shifts(
+    employee: Annotated[str, typer.Argument(help="Employee ID or fuzzy name.")],
+    count: Annotated[int, typer.Option("--count", help="Number of shifts to return.")] = 5,
+    search_days: Annotated[
+        int, typer.Option("--search-days", help="Days ahead to search.")
+    ] = 90,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Fetch the next shifts for one employee."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_next_employee_shifts(
+                    employee,
+                    count=count,
+                    search_days=search_days,
+                ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("next-open-shifts")
+def next_open_shifts(
+    count: Annotated[int, typer.Option("--count", help="Number of open shifts to return.")] = 10,
+    search_days: Annotated[
+        int, typer.Option("--search-days", help="Days ahead to search.")
+    ] = 90,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Fetch the next open shifts."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_next_open_shifts(count=count, search_days=search_days),
                 include_raw=False,
             )
 

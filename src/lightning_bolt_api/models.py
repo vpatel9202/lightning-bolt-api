@@ -168,6 +168,8 @@ class ResultMetadata(BaseModel):
     total_matches: int = 0
     returned: int = 0
     truncated: bool = False
+    offset: int = 0
+    next_offset: int | None = None
 
 
 class EmployeeRef(BaseModel):
@@ -181,6 +183,7 @@ class EmployeeScheduleSummary(BaseModel):
     start_date: Date
     end_date: Date
     shift_count: int = 0
+    shift_dates: list[Date] = Field(default_factory=list)
     shifts: list[CompactSlot] = Field(default_factory=list)
     metadata: ResultMetadata = Field(default_factory=ResultMetadata)
 
@@ -197,6 +200,8 @@ class ShiftCountSummary(BaseModel):
 class DailyCoverage(BaseModel):
     date: Date
     working_count: int = 0
+    template_counts: dict[str, int] = Field(default_factory=dict)
+    assignment_counts: dict[str, int] = Field(default_factory=dict)
     workers: list[CompactSlot] = Field(default_factory=list)
 
 
@@ -211,7 +216,16 @@ class OpenShiftSummary(BaseModel):
     start_date: Date
     end_date: Date
     open_shift_count: int = 0
+    open_shift_dates: list[Date] = Field(default_factory=list)
     shifts: list[CompactSlot] = Field(default_factory=list)
+    metadata: ResultMetadata = Field(default_factory=ResultMetadata)
+
+
+class ScheduleRangeSummary(BaseModel):
+    start_date: Date
+    end_date: Date
+    slot_count: int = 0
+    slots: list[CompactSlot] = Field(default_factory=list)
     metadata: ResultMetadata = Field(default_factory=ResultMetadata)
 
 

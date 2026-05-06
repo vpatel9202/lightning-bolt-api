@@ -542,6 +542,8 @@ Validate request dates and keep request payloads minimal.
 ViewerAPI has no confirmed server-side field projection or result-limit parameter. A broad
 view/date-range request may return a large schedule grid plus metadata. Libraries that
 serve LLM or MCP clients should summarize ViewerAPI results before returning them.
+Use default result caps with pagination metadata, not hard blockers, so advanced callers
+can still page or intentionally request full exports.
 
 For employee-specific questions, prefer:
 

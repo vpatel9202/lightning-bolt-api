@@ -585,6 +585,12 @@ async def test_who_is_working_and_open_shifts_return_compact_limited_results() -
             end_date="20260513",
             max_results=1,
         )
+        coverage_with_workers = await client.who_is_working(
+            start_date="20260506",
+            end_date="20260513",
+            include_workers=True,
+            max_results=1,
+        )
         open_summary = await client.list_open_shifts(
             start_date="20260506",
             end_date="20260513",
@@ -593,11 +599,95 @@ async def test_who_is_working_and_open_shifts_return_compact_limited_results() -
         await client.aclose()
 
     assert coverage.metadata.total_matches == 2
-    assert coverage.metadata.returned == 1
-    assert coverage.metadata.truncated is True
-    assert coverage.days[0].workers[0].display_name == "One"
+    assert coverage.metadata.returned == 0
+    assert coverage.days[0].template_counts == {"A": 1, "B": 1}
+    assert coverage_with_workers.metadata.returned == 1
+    assert coverage_with_workers.metadata.truncated is True
+    assert coverage_with_workers.days[0].workers[0].display_name == "One"
     assert open_summary.open_shift_count == 1
     assert open_summary.shifts[0].is_open_shift is True
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_schedule_summary_paginates_and_filters() -> None:
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+        ),
+        session_cache=None,
+    )
+    respx.post(f"{LBAPI_BASE_URL}/viewerapi").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "schedule_data": {
+                    "data": [
+                        {"emp_id": 1, "template": "R10", "slot_date": "2026-05-06"},
+                        {"emp_id": 2, "template": "R10", "slot_date": "2026-05-07"},
+                        {"emp_id": 3, "template": "A5", "slot_date": "2026-05-08"},
+                    ]
+                }
+            },
+        )
+    )
+
+    try:
+        summary = await client.summarize_schedule_range(
+            start_date="20260506",
+            end_date="20260513",
+            template_query="R10",
+            max_results=1,
+            offset=1,
+        )
+    finally:
+        await client.aclose()
+
+    assert summary.slot_count == 2
+    assert summary.metadata.returned == 1
+    assert summary.metadata.offset == 1
+    assert summary.metadata.next_offset is None
+    assert summary.slots[0].emp_id == 2
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_employee_shift_dates_omit_shift_rows() -> None:
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+        ),
+        session_cache=None,
+    )
+    respx.get(f"{LBAPI_BASE_URL}/schedule/range/").mock(
+        return_value=httpx.Response(
+            200,
+            json=[
+                {"emp_id": 20088, "template": "A", "slot_date": "2026-05-06"},
+                {"emp_id": 20088, "template": "B", "slot_date": "2026-05-06"},
+                {"emp_id": 20088, "template": "C", "slot_date": "2026-05-07"},
+            ],
+        )
+    )
+
+    try:
+        summary = await client.get_employee_shift_dates(
+            "20088",
+            start_date="20260506",
+            end_date="20260513",
+        )
+    finally:
+        await client.aclose()
+
+    assert summary.shift_count == 3
+    assert [day.isoformat() for day in summary.shift_dates] == ["2026-05-06", "2026-05-07"]
+    assert summary.shifts == []
 
 
 @pytest.mark.asyncio

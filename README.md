@@ -87,13 +87,18 @@ Common commands:
 ```bash
 uv run lb-api dashboard
 uv run lb-api diagnose
-uv run lb-api my-shifts --start 20260501 --end 20260531
-uv run lb-api employee-shifts "halfast" --start 20260501 --end 20260531
+uv run lb-api my-shift-dates --start 20260501 --end 20260531
+uv run lb-api my-shifts --start 20260501 --end 20260531 --detail-level compact
+uv run lb-api employee-shift-dates "halfast" --start 20260501 --end 20260531
+uv run lb-api employee-shifts "halfast" --start 20260501 --end 20260531 --detail-level dates
 uv run lb-api count-shifts "halfast" --start 20260501 --end 20260531 --group-by date
-uv run lb-api overlaps "halfast" --start 20260501 --end 20260531
+uv run lb-api overlaps "halfast" --start 20260501 --end 20260531 --detail-level dates
 uv run lb-api who-is-working --start 20260501 --end 20260501
-uv run lb-api open-shifts --start 20260501 --end 20260531
+uv run lb-api open-shift-dates --start 20260501 --end 20260531
+uv run lb-api open-shifts --start 20260501 --end 20260531 --detail-level compact
 uv run lb-api working-with "halfast" --start 20260501 --end 20260531
+uv run lb-api next-my-shifts --count 5
+uv run lb-api next-open-shifts --count 10
 uv run lb-api templates --view-id 123
 uv run lb-api viewerapi --start 20260501 --end 20260531
 uv run lb-api viewerapi --view-id 123 --start 20260501 --end 20260531
@@ -105,10 +110,10 @@ uv run lb-api feed --emp-id 10001 --since 1770000000
 uv run lb-api find-employee "patel"
 ```
 
-Prefer `my-shifts`, `employee-shifts`, `count-shifts`, `overlaps`, `who-is-working`, and
-`open-shifts` for normal use. They return compact summaries and cap large result sets with
-metadata. `viewerapi` and `schedule` are low-level debugging commands and may produce large
-JSON payloads.
+Prefer date/count commands for normal use. Use `--detail-level compact` when shift rows are
+needed. Compact commands cap large result sets by default and expose `--max-results` /
+`--offset` where appropriate. `viewerapi` and `schedule` are low-level debugging/export
+commands and may produce large JSON payloads.
 
 When `LB_EMP_ID` is set, `personal-schedule`, `subscription`, and `feed` can omit
 `--emp-id`. Subscription output includes app-specific calendar URLs derived from Lightning
@@ -156,12 +161,18 @@ MCP tools:
 - `lb_list_views`
 - `lb_list_templates`
 - `lb_get_my_shifts`
+- `lb_get_my_shift_dates`
 - `lb_get_employee_shifts`
+- `lb_get_employee_shift_dates`
 - `lb_count_employee_shifts`
 - `lb_find_overlapping_shifts`
 - `lb_who_is_working`
 - `lb_list_open_shifts`
+- `lb_get_open_shift_dates`
 - `lb_who_is_working_with`
+- `lb_get_next_my_shifts`
+- `lb_get_next_employee_shifts`
+- `lb_get_next_open_shifts`
 - `lb_get_viewerapi`
 - `lb_fetch_schedule_range`
 - `lb_get_subscription`

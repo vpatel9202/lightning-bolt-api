@@ -129,11 +129,13 @@ The MCP surface favors compact tools over raw schedule exports:
 
 - employee shift reads and counts use `/schedule/range` with a resolved `emp_id`
 - overlap calculations use two employee-specific schedule reads
-- coverage and open-shift queries use ViewerAPI internally, then return compact rows
+- date-only tools return dates and counts without slot rows
+- coverage and open-shift queries use ViewerAPI internally, then return grouped summaries
 - broad low-level ViewerAPI/schedule tools remain available for debugging and exports
 
 Compact responses include count/truncation metadata so clients can tell when output was
-capped.
+capped. Default MCP output should favor `detail_level="dates"` or grouped counts; callers
+can request compact rows or larger pages when needed.
 
 ## Models And Raw Payloads
 
