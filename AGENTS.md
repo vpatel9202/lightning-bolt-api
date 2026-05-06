@@ -18,6 +18,8 @@ Implemented:
 - Session cache persistence for auth/session state.
 - Refresh-token rotation with serialized refresh.
 - Dashboard, ViewerAPI, personal schedule range, subscription, and employee feed reads.
+- Derived calendar subscription URLs from subscription metadata.
+- Employee ID discovery with fuzzy matching against ViewerAPI personnel.
 - Self-bootstrapping view discovery when `LB_DEFAULT_VIEW_ID` is not set.
 - Pydantic models with preserved `raw` payloads.
 - `lb-api` CLI.
@@ -97,6 +99,20 @@ Other read endpoints:
 - `/subscription?emp_id=N&dash=true`
 - `https://fd.lightning-bolt.com/employee_feed/{customer_id}/{emp_id}?last=<unix_ts>`
 
+Subscription URL derivation:
+
+- Lightning Bolt returns subscription metadata, not the app-specific URLs directly.
+- Derive URLs from `md5` on `m.lightning-bolt.com`.
+- `g.ics` is used for Google Calendar and Android.
+- `i.ics` is used for iPhone/iPad, IBM Lotus Notes, and Calendar for Mac/iCal.
+- `o.ics` is used for Outlook with the `webcal://` scheme.
+
+Employee-scoped reads:
+
+- Prefer `LB_EMP_ID` for stable automation.
+- `LB_EMPLOYEE_NAME` is a fuzzy-match fallback for discovery and convenience.
+- Do not rely on display names as durable identifiers.
+
 ## Non-Goals
 
 - No provider MD/APP classification.
@@ -104,6 +120,7 @@ Other read endpoints:
 - No DOM scraping as primary implementation.
 - No Google Calendar sync.
 - No iCal schedule parsing for business logic.
+- No calendar subscription feed parsing for business logic.
 - No shift claiming, swaps, request creation, or other write actions.
 - No automatic generated export storage.
 - No hardcoded organization-specific template IDs or provider assumptions.

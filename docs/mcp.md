@@ -41,6 +41,15 @@ lb_fetch_schedule_range(start_date="20260501", end_date="20260507")
 
 All date arguments must be `YYYYMMDD`.
 
+For employee-scoped tools, set `LB_EMP_ID` when possible. If the employee ID is unknown,
+call:
+
+```text
+lb_find_employee(query="name")
+```
+
+Then put the selected `emp_id` in `LB_EMP_ID` for repeatable automation.
+
 ## Host Stdio
 
 Use stdio for local MCP clients that launch the server process directly:
@@ -141,10 +150,15 @@ Returns subscription metadata and derived app-specific calendar URLs. If `emp_id
 omitted, the server resolves it from `LB_EMP_ID`, `LB_EMPLOYEE_NAME`, or the authenticated
 session.
 
+Compact responses include `calendar_urls` and `default_calendar_url`; pass
+`include_raw=true` only when the original Lightning Bolt subscription payload is needed.
+
 ### `lb_find_employee(query, view_id?, limit=10, include_raw=false)`
 
 Returns ranked personnel matches so users can discover the stable employee ID to put in
 `LB_EMP_ID`.
+
+Each match includes `emp_id`, score, visible names, and matched fields.
 
 ### `lb_get_employee_feed(customer_id?, emp_id?, since?, include_raw=false)`
 

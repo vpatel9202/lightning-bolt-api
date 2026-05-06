@@ -12,9 +12,10 @@ shift claiming, swaps, requests, or any other write action.
 
 - Direct HTTP login and token refresh, without Playwright or DOM scraping in normal use.
 - Auth/session cache persistence for cookies, refresh token, JWT, expiry, and user IDs.
-- Read endpoints for dashboard, ViewerAPI, schedule range, subscription metadata, and
-  employee feed.
+- Read endpoints for dashboard, ViewerAPI, schedule range, subscription metadata with
+  derived calendar URLs, and employee feed.
 - Self-bootstrapping view discovery when `LB_DEFAULT_VIEW_ID` is not set.
+- Employee ID discovery with fuzzy matching against visible personnel.
 - Pydantic models with `raw` payload preservation.
 - `lb-api` CLI for local JSON output.
 - `lb-api-mcp` server over stdio and streamable HTTP.
@@ -95,6 +96,23 @@ Bolt's subscription metadata.
 
 Use `--include-raw` when you need the preserved Lightning Bolt source payload.
 
+Subscription output includes a `calendar_urls` object:
+
+```json
+{
+  "emp_id": 10001,
+  "default_calendar_url": "https://m.lightning-bolt.com/<md5>g.ics",
+  "calendar_urls": {
+    "google": "https://m.lightning-bolt.com/<md5>g.ics",
+    "android": "https://m.lightning-bolt.com/<md5>g.ics",
+    "iphone_ipad": "https://m.lightning-bolt.com/<md5>i.ics",
+    "mac_ical": "https://m.lightning-bolt.com/<md5>i.ics",
+    "lotus_notes": "https://m.lightning-bolt.com/<md5>i.ics",
+    "outlook": "webcal://m.lightning-bolt.com/<md5>o.ics"
+  }
+}
+```
+
 ## MCP Quick Start
 
 Host stdio:
@@ -151,7 +169,8 @@ async def main() -> None:
     async with LightningBoltClient.from_env() as client:
         context = await client.discover_context()
         slots = await client.fetch_schedule(start_date="20260501", end_date="20260507")
-        print(context.source, len(slots))
+        subscription = await client.get_subscription()
+        print(context.source, len(slots), subscription.default_calendar_url)
 
 
 asyncio.run(main())

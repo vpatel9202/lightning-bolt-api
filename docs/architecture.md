@@ -86,9 +86,15 @@ Other read endpoints:
 All Lightning Bolt request dates must be `YYYYMMDD`. ISO date strings are rejected before
 requests are sent.
 
-Employee-scoped reads prefer `LB_EMP_ID`. If that is not set, `LB_EMPLOYEE_NAME` can be
-used for fuzzy matching against ViewerAPI personnel, and the authenticated session
-employee ID is the final fallback.
+Employee-scoped reads resolve an employee ID in this order:
+
+1. Explicit method, CLI, or MCP argument.
+2. `LB_EMP_ID`.
+3. `LB_EMPLOYEE_NAME`, fuzzy-matched against ViewerAPI `personnel`.
+4. Authenticated session employee ID.
+
+Fuzzy matching is intended for discovery and first-run convenience. Stable automation
+should use `LB_EMP_ID`.
 
 ## Discovery
 
@@ -139,6 +145,10 @@ Key models:
 
 The helpers do not classify providers as MD, APP, or any organization-specific type.
 
+`Subscription` normalizes the active subscription record and derives app-specific
+calendar subscription URLs from the raw `md5` value. The library does not fetch or parse
+those calendar feeds.
+
 ## CLI
 
 The CLI is implemented with Typer. It loads `.env`, creates a client from environment
@@ -156,6 +166,7 @@ CLI commands:
 - `schedule`
 - `personal-schedule`
 - `subscription`
+- `find-employee`
 - `feed`
 
 Commands accept `--output` for explicit file output and `--include-raw` where raw payloads

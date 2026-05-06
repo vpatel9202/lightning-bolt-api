@@ -17,6 +17,7 @@ This reference covers read-only schedule access:
 - ViewerAPI schedule reads
 - personal schedule reads
 - subscription metadata
+- derived calendar subscription URLs
 - employee activity feed
 
 It does not cover write actions such as shift claims, swaps, schedule edits, request
@@ -30,6 +31,7 @@ creation, or note updates.
 | `lblite.lightning-bolt.com` | SPA host and dashboard/session bootstrap API. |
 | `lbapi.lightning-bolt.com` | Bearer-token API for ViewerAPI, schedule, token refresh, and subscription metadata. |
 | `fd.lightning-bolt.com` | Bearer-token API for employee activity feed. |
+| `m.lightning-bolt.com` | Public calendar subscription feed host. |
 
 ## Auth Flow
 
@@ -375,6 +377,9 @@ ViewerAPI returns enough metadata to avoid scraping UI labels.
 - roles
 - NPI when visible and applicable
 
+Clients can use `personnel[]` for employee ID discovery. Prefer stable `emp_id` values for
+automation; display names can be nicknames or manually formatted by schedulers.
+
 `assignments[]` commonly includes:
 
 - assignment IDs
@@ -446,6 +451,9 @@ endpoint. They are derived from the subscription `md5` field:
 | Outlook 2016 and later | `webcal://m.lightning-bolt.com/{md5}o.ics` |
 | IBM Lotus Notes | `https://m.lightning-bolt.com/{md5}i.ics` |
 | Calendar for Mac/iCal | `https://m.lightning-bolt.com/{md5}i.ics` |
+
+Use the Google/Android `g.ics` URL as the default general-purpose calendar URL. The
+Outlook variant intentionally uses the `webcal://` scheme.
 
 ## Employee Feed Endpoint
 
@@ -558,6 +566,7 @@ A new client in another language should implement:
 - strict `YYYYMMDD` request-date validation
 - ViewerAPI read with optional `view_id`
 - schedule range, subscription, and employee feed reads
+- derived calendar subscription URL construction from subscription `md5`
 - raw payload preservation
 - local session cache that stores auth state only
 
