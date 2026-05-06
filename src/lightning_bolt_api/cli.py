@@ -240,6 +240,244 @@ def personal_schedule(
     _emit(asyncio.run(run()), output)
 
 
+@app.command("my-shifts")
+def my_shifts(
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    include_details: Annotated[
+        bool, typer.Option(help="Include compact shift details instead of counts only.")
+    ] = True,
+    max_results: Annotated[
+        int, typer.Option("--max-results", help="Maximum compact shifts to return.")
+    ] = 200,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Fetch the configured/authenticated employee's shifts using compact output."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_my_shifts(
+                    start_date=start,
+                    end_date=end,
+                    include_details=include_details,
+                    max_results=max_results,
+                ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("employee-shifts")
+def employee_shifts(
+    employee: Annotated[str, typer.Argument(help="Employee ID or fuzzy name.")],
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    include_details: Annotated[
+        bool, typer.Option(help="Include compact shift details instead of counts only.")
+    ] = True,
+    max_results: Annotated[
+        int, typer.Option("--max-results", help="Maximum compact shifts to return.")
+    ] = 200,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Fetch one employee's shifts using compact output."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_employee_shifts(
+                    employee,
+                    start_date=start,
+                    end_date=end,
+                    include_details=include_details,
+                    max_results=max_results,
+                ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("count-shifts")
+def count_shifts(
+    employee: Annotated[str, typer.Argument(help="Employee ID or fuzzy name.")],
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    group_by: Annotated[
+        str, typer.Option("--group-by", help="One of: none, date, template.")
+    ] = "none",
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Count one employee's shifts without returning the full schedule."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.count_employee_shifts(
+                    employee,
+                    start_date=start,
+                    end_date=end,
+                    group_by=group_by,
+                ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("overlaps")
+def overlaps(
+    employee_b: Annotated[str, typer.Argument(help="Second employee ID or fuzzy name.")],
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    employee_a: Annotated[
+        str | None,
+        typer.Option("--employee-a", help="First employee ID or fuzzy name. Defaults to me."),
+    ] = None,
+    max_results: Annotated[
+        int, typer.Option("--max-results", help="Maximum overlap rows to return.")
+    ] = 200,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Find overlapping shifts between two employees with compact output."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.find_overlapping_shifts(
+                    employee_a,
+                    employee_b,
+                    start_date=start,
+                    end_date=end,
+                    max_results=max_results,
+                ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("who-is-working")
+def who_is_working(
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    view_id: Annotated[
+        int | None, typer.Option("--view-id", help="Lightning Bolt view ID.")
+    ] = None,
+    template_id: Annotated[
+        list[int] | None, typer.Option("--template-id", help="Filter by template ID.")
+    ] = None,
+    include_open: Annotated[bool, typer.Option(help="Include open shifts.")] = False,
+    max_results: Annotated[
+        int, typer.Option("--max-results", help="Maximum compact worker rows to return.")
+    ] = 200,
+    tz: Annotated[str | None, typer.Option("--tz", help="IANA timezone.")] = None,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Summarize who is working by date without returning raw ViewerAPI slots."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.who_is_working(
+                    start_date=start,
+                    end_date=end,
+                    view_id=view_id,
+                    template_ids=template_id,
+                    include_open=include_open,
+                    max_results=max_results,
+                    tz=tz,
+                ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("open-shifts")
+def open_shifts(
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    view_id: Annotated[
+        int | None, typer.Option("--view-id", help="Lightning Bolt view ID.")
+    ] = None,
+    template_id: Annotated[
+        list[int] | None, typer.Option("--template-id", help="Filter by template ID.")
+    ] = None,
+    max_results: Annotated[
+        int, typer.Option("--max-results", help="Maximum open shifts to return.")
+    ] = 200,
+    tz: Annotated[str | None, typer.Option("--tz", help="IANA timezone.")] = None,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """List open shifts with compact output."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.list_open_shifts(
+                    start_date=start,
+                    end_date=end,
+                    view_id=view_id,
+                    template_ids=template_id,
+                    max_results=max_results,
+                    tz=tz,
+                ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("working-with")
+def working_with(
+    employee: Annotated[str, typer.Argument(help="Employee ID or fuzzy name.")],
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    view_id: Annotated[
+        int | None, typer.Option("--view-id", help="Lightning Bolt view ID.")
+    ] = None,
+    max_results: Annotated[
+        int, typer.Option("--max-results", help="Maximum compact coworker rows to return.")
+    ] = 200,
+    tz: Annotated[str | None, typer.Option("--tz", help="IANA timezone.")] = None,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Summarize who is working on the employee's shift dates."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.who_is_working_with(
+                    employee,
+                    start_date=start,
+                    end_date=end,
+                    view_id=view_id,
+                    max_results=max_results,
+                    tz=tz,
+                ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
 @app.command()
 def subscription(
     emp_id: Annotated[

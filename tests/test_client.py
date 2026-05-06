@@ -398,6 +398,210 @@ async def test_auto_discovery_falls_back_to_personal_context(
 
 @pytest.mark.asyncio
 @respx.mock
+async def test_get_my_shifts_returns_compact_summary() -> None:
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+            emp_id=20319,
+        ),
+        session_cache=None,
+    )
+    route = respx.get(f"{LBAPI_BASE_URL}/schedule/range/").mock(
+        return_value=httpx.Response(
+            200,
+            json=[
+                {
+                    "emp_id": 20319,
+                    "display_name": "Vash Patel",
+                    "compact_name": "vvp",
+                    "template": "R10",
+                    "template_id": 10,
+                    "slot_date": "2026-05-06",
+                    "start_time": "2026-05-06T07:00:00",
+                    "stop_time": "2026-05-06T17:00:00",
+                }
+            ],
+        )
+    )
+
+    try:
+        summary = await client.get_my_shifts(start_date="20260506", end_date="20260513")
+    finally:
+        await client.aclose()
+
+    assert route.calls.last.request.url.params["emp_id"] == "20319"
+    assert summary.shift_count == 1
+    assert summary.employee.display_name == "Vash Patel"
+    assert summary.shifts[0].template_name == "R10"
+    assert summary.shifts[0].raw is None if hasattr(summary.shifts[0], "raw") else True
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_count_employee_shifts_groups_by_template() -> None:
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+        ),
+        session_cache=None,
+    )
+    respx.get(f"{LBAPI_BASE_URL}/schedule/range/").mock(
+        return_value=httpx.Response(
+            200,
+            json=[
+                {"emp_id": 20088, "template": "A", "slot_date": "2026-05-06"},
+                {"emp_id": 20088, "template": "A", "slot_date": "2026-05-07"},
+                {"emp_id": 20088, "template": "B", "slot_date": "2026-05-08"},
+            ],
+        )
+    )
+
+    try:
+        summary = await client.count_employee_shifts(
+            "20088",
+            start_date="20260506",
+            end_date="20260513",
+            group_by="template",
+        )
+    finally:
+        await client.aclose()
+
+    assert summary.shift_count == 3
+    assert summary.groups == {"A": 2, "B": 1}
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_find_overlapping_shifts_uses_employee_schedule_ranges() -> None:
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+            emp_id=20319,
+        ),
+        session_cache=None,
+    )
+
+    def schedule_response(request: httpx.Request) -> httpx.Response:
+        emp_id = request.url.params["emp_id"]
+        if emp_id == "20319":
+            return httpx.Response(
+                200,
+                json=[
+                    {
+                        "emp_id": 20319,
+                        "display_name": "Vash Patel",
+                        "template": "R10",
+                        "slot_date": "2026-05-06",
+                        "start_time": "2026-05-06T07:00:00",
+                        "stop_time": "2026-05-06T17:00:00",
+                    }
+                ],
+            )
+        return httpx.Response(
+            200,
+            json=[
+                {
+                    "emp_id": 20088,
+                    "display_name": "Ashley Halfast",
+                    "template": "R11",
+                    "slot_date": "2026-05-06",
+                    "start_time": "2026-05-06T16:00:00",
+                    "stop_time": "2026-05-06T22:00:00",
+                }
+            ],
+        )
+
+    respx.get(f"{LBAPI_BASE_URL}/schedule/range/").mock(side_effect=schedule_response)
+
+    try:
+        summary = await client.find_overlapping_shifts(
+            None,
+            "20088",
+            start_date="20260506",
+            end_date="20260513",
+        )
+    finally:
+        await client.aclose()
+
+    assert summary.overlap_count == 1
+    assert [day.isoformat() for day in summary.overlap_days] == ["2026-05-06"]
+    assert summary.overlaps[0].employee_b_shift.display_name == "Ashley Halfast"
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_who_is_working_and_open_shifts_return_compact_limited_results() -> None:
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+        ),
+        session_cache=None,
+    )
+    respx.post(f"{LBAPI_BASE_URL}/viewerapi").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "schedule_data": {
+                    "data": [
+                        {
+                            "emp_id": 1,
+                            "display_name": "One",
+                            "template": "A",
+                            "slot_date": "2026-05-06",
+                        },
+                        {
+                            "emp_id": 2,
+                            "display_name": "Two",
+                            "template": "B",
+                            "slot_date": "2026-05-06",
+                        },
+                        {
+                            "display_name": "OPEN 1",
+                            "last_name": "z.Administrative",
+                            "template": "A",
+                            "slot_date": "2026-05-07",
+                        },
+                    ]
+                }
+            },
+        )
+    )
+
+    try:
+        coverage = await client.who_is_working(
+            start_date="20260506",
+            end_date="20260513",
+            max_results=1,
+        )
+        open_summary = await client.list_open_shifts(
+            start_date="20260506",
+            end_date="20260513",
+        )
+    finally:
+        await client.aclose()
+
+    assert coverage.metadata.total_matches == 2
+    assert coverage.metadata.returned == 1
+    assert coverage.metadata.truncated is True
+    assert coverage.days[0].workers[0].display_name == "One"
+    assert open_summary.open_shift_count == 1
+    assert open_summary.shifts[0].is_open_shift is True
+
+
+@pytest.mark.asyncio
+@respx.mock
 async def test_concurrent_refresh_is_serialized(tmp_path: Path) -> None:
     old_exp = int(time.time()) - 10
     new_exp = int(time.time()) + 3600

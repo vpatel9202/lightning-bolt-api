@@ -76,7 +76,7 @@ uv run lb-api login
 uv run lb-api discover
 uv run lb-api diagnose
 uv run lb-api views
-uv run lb-api schedule --start 20260501 --end 20260507
+uv run lb-api my-shifts --start 20260501 --end 20260507
 ```
 
 Dates must be `YYYYMMDD`. ISO strings such as `2026-05-01` are rejected because Lightning
@@ -87,6 +87,13 @@ Common commands:
 ```bash
 uv run lb-api dashboard
 uv run lb-api diagnose
+uv run lb-api my-shifts --start 20260501 --end 20260531
+uv run lb-api employee-shifts "halfast" --start 20260501 --end 20260531
+uv run lb-api count-shifts "halfast" --start 20260501 --end 20260531 --group-by date
+uv run lb-api overlaps "halfast" --start 20260501 --end 20260531
+uv run lb-api who-is-working --start 20260501 --end 20260501
+uv run lb-api open-shifts --start 20260501 --end 20260531
+uv run lb-api working-with "halfast" --start 20260501 --end 20260531
 uv run lb-api templates --view-id 123
 uv run lb-api viewerapi --start 20260501 --end 20260531
 uv run lb-api viewerapi --view-id 123 --start 20260501 --end 20260531
@@ -97,6 +104,11 @@ uv run lb-api subscription --emp-id 10001
 uv run lb-api feed --emp-id 10001 --since 1770000000
 uv run lb-api find-employee "patel"
 ```
+
+Prefer `my-shifts`, `employee-shifts`, `count-shifts`, `overlaps`, `who-is-working`, and
+`open-shifts` for normal use. They return compact summaries and cap large result sets with
+metadata. `viewerapi` and `schedule` are low-level debugging commands and may produce large
+JSON payloads.
 
 When `LB_EMP_ID` is set, `personal-schedule`, `subscription`, and `feed` can omit
 `--emp-id`. Subscription output includes app-specific calendar URLs derived from Lightning
@@ -143,6 +155,13 @@ MCP tools:
 - `lb_discover_context`
 - `lb_list_views`
 - `lb_list_templates`
+- `lb_get_my_shifts`
+- `lb_get_employee_shifts`
+- `lb_count_employee_shifts`
+- `lb_find_overlapping_shifts`
+- `lb_who_is_working`
+- `lb_list_open_shifts`
+- `lb_who_is_working_with`
 - `lb_get_viewerapi`
 - `lb_fetch_schedule_range`
 - `lb_get_subscription`

@@ -34,10 +34,10 @@ does not list usable views and the default ViewerAPI response appears personal-o
 server probes bounded read-only candidate views and caches the broadest accessible result.
 A first-time user does not need to know a view ID before fetching schedule data.
 
-Then fetch schedule data with:
+Then fetch personal schedule data with a compact tool:
 
 ```text
-lb_fetch_schedule_range(start_date="20260501", end_date="20260507")
+lb_get_my_shifts(start_date="20260501", end_date="20260507")
 ```
 
 All date arguments must be `YYYYMMDD`.
@@ -50,6 +50,25 @@ lb_find_employee(query="name")
 ```
 
 Then put the selected `emp_id` in `LB_EMP_ID` for repeatable automation.
+
+## Token-Safe Tool Selection
+
+MCP clients should prefer intent-level tools that return compact summaries:
+
+- Use `lb_get_my_shifts` for "when am I working?"
+- Use `lb_get_employee_shifts` for one named employee's shifts.
+- Use `lb_count_employee_shifts` for "how many shifts?"
+- Use `lb_find_overlapping_shifts` for overlap questions.
+- Use `lb_who_is_working` for date coverage questions.
+- Use `lb_list_open_shifts` for available open shifts.
+- Use `lb_who_is_working_with` for "who works with me/them?"
+
+Avoid `lb_get_viewerapi` and `lb_fetch_schedule_range` unless the user asks for raw data,
+debugging, or an advanced broad schedule export. ViewerAPI has no confirmed server-side
+field projection or result limit, so broad date ranges can produce large payloads.
+
+Use the smallest date range that answers the user. Prefer `include_details=false` or count
+tools when the user asks for counts or dates rather than full shift details.
 
 ## Host Stdio
 
@@ -136,7 +155,7 @@ Lists templates for a known view ID.
 
 ### `lb_get_viewerapi(view_id?, start_date?, end_date?, tz?, include_raw=false)`
 
-Calls ViewerAPI and returns normalized viewer state:
+Low-level debug/export tool. Calls ViewerAPI and returns normalized viewer state:
 
 - view context
 - views
@@ -148,12 +167,49 @@ Calls ViewerAPI and returns normalized viewer state:
 - holidays
 
 `view_id` may be omitted. In that case the client uses automatic broad-view discovery when
-the default context appears personal-only.
+the default context appears personal-only. This tool can return large payloads; prefer the
+compact schedule tools for normal MCP use.
 
 ### `lb_fetch_schedule_range(start_date, end_date, view_id?, template_ids?, tz?, include_raw=false)`
 
-Returns schedule slots for a date range. `view_id` is optional. If omitted, the client uses
-automatic broad-view discovery. `LB_DEFAULT_VIEW_ID` is only an override.
+Low-level broad schedule tool. Returns schedule slots for a date range. `view_id` is
+optional. If omitted, the client uses automatic broad-view discovery. This can return many
+slots; prefer the compact tools below for model-facing answers.
+
+### `lb_get_my_shifts(start_date, end_date, include_details=true, max_results=200)`
+
+Returns the configured/authenticated employee's schedule via the employee-specific
+schedule endpoint. The response includes employee metadata, shift count, compact shifts,
+and truncation metadata.
+
+### `lb_get_employee_shifts(employee, start_date, end_date, include_details=true, max_results=200)`
+
+Resolves `employee` as an employee ID or fuzzy name, then returns that employee's compact
+schedule. Use this instead of broad schedule tools for one-person questions.
+
+### `lb_count_employee_shifts(employee, start_date, end_date, group_by="none")`
+
+Returns only shift counts. `group_by` may be `none`, `date`, or `template`.
+
+### `lb_find_overlapping_shifts(employee_b, start_date, end_date, employee_a?, max_results=200)`
+
+Finds overlapping shifts between two employees. `employee_a` defaults to the configured or
+authenticated employee. Uses employee-specific schedule reads and returns only overlap
+rows and overlap dates.
+
+### `lb_who_is_working(start_date, end_date, view_id?, template_ids?, include_open=false, max_results=200, tz?)`
+
+Summarizes workers by date using compact rows. This uses ViewerAPI internally because it is
+a broad coverage question, but it filters and caps output before returning to the model.
+
+### `lb_list_open_shifts(start_date, end_date, view_id?, template_ids?, max_results=200, tz?)`
+
+Returns compact open-shift rows and count metadata.
+
+### `lb_who_is_working_with(employee, start_date, end_date, view_id?, max_results=200, tz?)`
+
+Finds the employee's shift dates with the employee-specific endpoint, then summarizes
+workers on those same dates.
 
 ### `lb_get_subscription(emp_id?, include_raw=false)`
 

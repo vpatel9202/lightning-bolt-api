@@ -7,7 +7,8 @@ import difflib
 import json
 import os
 import re
-from datetime import date
+from collections import defaultdict
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote
@@ -25,11 +26,21 @@ from lightning_bolt_api.constants import (
 )
 from lightning_bolt_api.models import (
     ActivityFeed,
+    CompactSlot,
     ContextDiagnostics,
+    DailyCoverage,
+    DailyCoverageSummary,
     Dashboard,
     DiscoveredContext,
     EmployeeMatch,
+    EmployeeRef,
+    EmployeeScheduleSummary,
+    OpenShiftSummary,
+    OverlapSummary,
+    ResultMetadata,
     SessionState,
+    ShiftCountSummary,
+    ShiftOverlap,
     Slot,
     Subscription,
     Template,
@@ -411,6 +422,240 @@ class LightningBoltClient:
         response.raise_for_status()
         return parse_viewerapi(response.json()).slots
 
+    async def get_my_shifts(
+        self,
+        *,
+        start_date: date | str,
+        end_date: date | str,
+        include_details: bool = True,
+        max_results: int = 200,
+    ) -> EmployeeScheduleSummary:
+        return await self.get_employee_shifts(
+            None,
+            start_date=start_date,
+            end_date=end_date,
+            include_details=include_details,
+            max_results=max_results,
+        )
+
+    async def get_employee_shifts(
+        self,
+        employee: str | int | None = None,
+        *,
+        start_date: date | str,
+        end_date: date | str,
+        include_details: bool = True,
+        max_results: int = 200,
+    ) -> EmployeeScheduleSummary:
+        emp_id = await self._resolve_employee_arg(employee)
+        slots = await self.fetch_personal_schedule(
+            emp_id=emp_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        limited = _limit_items(slots, max_results) if include_details else []
+        return EmployeeScheduleSummary(
+            employee=_employee_ref_from_slots(emp_id, slots),
+            start_date=_model_date(start_date),
+            end_date=_model_date(end_date),
+            shift_count=len(slots),
+            shifts=[_compact_slot(slot) for slot in limited],
+            metadata=(
+                _metadata(len(slots), len(limited))
+                if include_details
+                else ResultMetadata(total_matches=len(slots), returned=0, truncated=False)
+            ),
+        )
+
+    async def count_employee_shifts(
+        self,
+        employee: str | int | None = None,
+        *,
+        start_date: date | str,
+        end_date: date | str,
+        group_by: str = "none",
+    ) -> ShiftCountSummary:
+        if group_by not in {"none", "date", "template"}:
+            raise ValueError("group_by must be one of: none, date, template.")
+        emp_id = await self._resolve_employee_arg(employee)
+        slots = await self.fetch_personal_schedule(
+            emp_id=emp_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        groups: dict[str, int] = {}
+        if group_by == "date":
+            groups = dict(sorted(_count_by_date(slots).items()))
+        elif group_by == "template":
+            groups = dict(sorted(_count_by_template(slots).items()))
+        return ShiftCountSummary(
+            employee=_employee_ref_from_slots(emp_id, slots),
+            start_date=_model_date(start_date),
+            end_date=_model_date(end_date),
+            shift_count=len(slots),
+            group_by=group_by,
+            groups=groups,
+        )
+
+    async def find_overlapping_shifts(
+        self,
+        employee_a: str | int | None,
+        employee_b: str | int,
+        *,
+        start_date: date | str,
+        end_date: date | str,
+        max_results: int = 200,
+    ) -> OverlapSummary:
+        emp_id_a = await self._resolve_employee_arg(employee_a)
+        emp_id_b = await self._resolve_employee_arg(employee_b)
+        slots_a = await self.fetch_personal_schedule(
+            emp_id=emp_id_a,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        slots_b = await self.fetch_personal_schedule(
+            emp_id=emp_id_b,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        overlaps = [
+            ShiftOverlap(
+                date=slot_a.slot_date,
+                employee_a_shift=_compact_slot(slot_a),
+                employee_b_shift=_compact_slot(slot_b),
+            )
+            for slot_a in slots_a
+            for slot_b in slots_b
+            if _slots_overlap(slot_a, slot_b)
+        ]
+        limited = _limit_items(overlaps, max_results)
+        return OverlapSummary(
+            employee_a=_employee_ref_from_slots(emp_id_a, slots_a),
+            employee_b=_employee_ref_from_slots(emp_id_b, slots_b),
+            start_date=_model_date(start_date),
+            end_date=_model_date(end_date),
+            overlap_count=len(overlaps),
+            overlap_days=sorted(
+                {overlap.date for overlap in overlaps if overlap.date is not None}
+            ),
+            overlaps=limited,
+            metadata=_metadata(len(overlaps), len(limited)),
+        )
+
+    async def who_is_working(
+        self,
+        *,
+        start_date: date | str,
+        end_date: date | str,
+        view_id: int | None = None,
+        template_ids: list[int] | None = None,
+        include_open: bool = False,
+        max_results: int = 200,
+        tz: str | None = None,
+    ) -> DailyCoverageSummary:
+        slots = await self.fetch_schedule(
+            view_id=view_id,
+            start_date=start_date,
+            end_date=end_date,
+            template_ids=template_ids,
+            tz=tz,
+        )
+        if not include_open:
+            slots = [slot for slot in slots if not slot.is_open_shift]
+        slots = [slot for slot in slots if slot.emp_id is not None or slot.is_open_shift]
+        limited = _limit_items(slots, max_results)
+        grouped: dict[date, list[CompactSlot]] = defaultdict(list)
+        for slot in limited:
+            if slot.slot_date is not None:
+                grouped[slot.slot_date].append(_compact_slot(slot))
+        days = [
+            DailyCoverage(date=slot_date, working_count=len(workers), workers=workers)
+            for slot_date, workers in sorted(grouped.items())
+        ]
+        return DailyCoverageSummary(
+            start_date=_model_date(start_date),
+            end_date=_model_date(end_date),
+            days=days,
+            metadata=_metadata(len(slots), len(limited)),
+        )
+
+    async def list_open_shifts(
+        self,
+        *,
+        start_date: date | str,
+        end_date: date | str,
+        view_id: int | None = None,
+        template_ids: list[int] | None = None,
+        max_results: int = 200,
+        tz: str | None = None,
+    ) -> OpenShiftSummary:
+        slots = await self.fetch_schedule(
+            view_id=view_id,
+            start_date=start_date,
+            end_date=end_date,
+            template_ids=template_ids,
+            tz=tz,
+        )
+        open_slots = [slot for slot in slots if slot.is_open_shift]
+        limited = _limit_items(open_slots, max_results)
+        return OpenShiftSummary(
+            start_date=_model_date(start_date),
+            end_date=_model_date(end_date),
+            open_shift_count=len(open_slots),
+            shifts=[_compact_slot(slot) for slot in limited],
+            metadata=_metadata(len(open_slots), len(limited)),
+        )
+
+    async def who_is_working_with(
+        self,
+        employee: str | int | None = None,
+        *,
+        start_date: date | str,
+        end_date: date | str,
+        view_id: int | None = None,
+        max_results: int = 200,
+        tz: str | None = None,
+    ) -> DailyCoverageSummary:
+        emp_id = await self._resolve_employee_arg(employee)
+        employee_slots = await self.fetch_personal_schedule(
+            emp_id=emp_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        work_dates = {slot.slot_date for slot in employee_slots if slot.slot_date is not None}
+        if not work_dates:
+            return DailyCoverageSummary(
+                start_date=_model_date(start_date),
+                end_date=_model_date(end_date),
+                days=[],
+                metadata=ResultMetadata(),
+            )
+        slots = await self.fetch_schedule(
+            view_id=view_id,
+            start_date=start_date,
+            end_date=end_date,
+            tz=tz,
+        )
+        coworkers = [
+            slot
+            for slot in slots
+            if slot.slot_date in work_dates and not slot.is_open_shift and slot.emp_id is not None
+        ]
+        limited = _limit_items(coworkers, max_results)
+        grouped: dict[date, list[CompactSlot]] = defaultdict(list)
+        for slot in limited:
+            if slot.slot_date is not None:
+                grouped[slot.slot_date].append(_compact_slot(slot))
+        return DailyCoverageSummary(
+            start_date=_model_date(start_date),
+            end_date=_model_date(end_date),
+            days=[
+                DailyCoverage(date=slot_date, working_count=len(workers), workers=workers)
+                for slot_date, workers in sorted(grouped.items())
+            ],
+            metadata=_metadata(len(coworkers), len(limited)),
+        )
+
     async def get_subscription(self, *, emp_id: int | None = None) -> Subscription:
         await self.ensure_authenticated()
         resolved_emp_id = await self.resolve_emp_id(emp_id=emp_id)
@@ -489,6 +734,20 @@ class LightningBoltClient:
         if self.session.emp_id is not None:
             return self.session.emp_id
         raise ValueError("Employee ID is required. Set LB_EMP_ID or pass emp_id.")
+
+    async def _resolve_employee_arg(self, employee: str | int | None) -> int:
+        if isinstance(employee, int):
+            return employee
+        if employee is None or not employee.strip():
+            return await self.resolve_emp_id()
+        if employee.strip().isdigit():
+            return int(employee)
+        matches = await self.find_employee(employee, limit=5)
+        if _has_strong_employee_match(matches):
+            resolved = matches[0].emp_id
+            if resolved is not None:
+                return resolved
+        raise ValueError(_employee_match_error(employee, matches))
 
     async def get_employee_feed(
         self,
@@ -782,6 +1041,78 @@ def _context_warnings(
             "Broader view discovery did not find an accessible view."
         ]
     return ["The selected ViewerAPI context appears to be personal-only."]
+
+
+def _model_date(value: date | str) -> date:
+    if isinstance(value, date):
+        return value
+    formatted = format_lb_date(value)
+    return datetime.strptime(formatted, "%Y%m%d").date()
+
+
+def _compact_slot(slot: Slot) -> CompactSlot:
+    return CompactSlot(
+        date=slot.slot_date,
+        start_time=slot.start_time,
+        stop_time=slot.stop_time,
+        template_id=slot.template_id,
+        template_name=slot.template_name,
+        assignment_id=slot.assign_id,
+        assignment_name=slot.assign_display_name,
+        emp_id=slot.emp_id,
+        display_name=slot.display_name,
+        compact_name=slot.compact_name,
+        is_open_shift=slot.is_open_shift,
+    )
+
+
+def _employee_ref_from_slots(emp_id: int | None, slots: list[Slot]) -> EmployeeRef:
+    first = next((slot for slot in slots if slot.emp_id == emp_id), None)
+    return EmployeeRef(
+        emp_id=emp_id,
+        display_name=first.display_name if first else None,
+        compact_name=first.compact_name if first else None,
+    )
+
+
+def _limit_items[T](items: list[T], max_results: int) -> list[T]:
+    if max_results < 0:
+        raise ValueError("max_results must be greater than or equal to 0.")
+    return items[:max_results]
+
+
+def _metadata(total: int, returned: int) -> ResultMetadata:
+    return ResultMetadata(
+        total_matches=total,
+        returned=returned,
+        truncated=returned < total,
+    )
+
+
+def _count_by_date(slots: list[Slot]) -> dict[str, int]:
+    counts: dict[str, int] = defaultdict(int)
+    for slot in slots:
+        if slot.slot_date is not None:
+            counts[slot.slot_date.isoformat()] += 1
+    return counts
+
+
+def _count_by_template(slots: list[Slot]) -> dict[str, int]:
+    counts: dict[str, int] = defaultdict(int)
+    for slot in slots:
+        key = slot.template_name or str(slot.template_id or "unknown")
+        counts[key] += 1
+    return counts
+
+
+def _slots_overlap(first: Slot, second: Slot) -> bool:
+    first_start = first.start_time_utc or first.start_time
+    first_stop = first.stop_time_utc or first.stop_time
+    second_start = second.start_time_utc or second.start_time
+    second_stop = second.stop_time_utc or second.stop_time
+    if not first_start or not first_stop or not second_start or not second_stop:
+        return first.slot_date is not None and first.slot_date == second.slot_date
+    return first_start < second_stop and second_start < first_stop
 
 
 def model_to_jsonable(model: Any, *, include_raw: bool = True) -> Any:

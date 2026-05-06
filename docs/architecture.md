@@ -86,6 +86,12 @@ Other read endpoints:
 All Lightning Bolt request dates must be `YYYYMMDD`. ISO date strings are rejected before
 requests are sent.
 
+ViewerAPI has no confirmed server-side field projection or result-limit parameters. For
+model-facing tools, the client should answer intent-level questions with compact summaries
+instead of returning broad slot arrays. Employee-specific questions should use
+`/schedule/range` by `emp_id`; broad coverage and open-shift questions may use ViewerAPI
+internally but must filter, summarize, and cap output before returning to MCP clients.
+
 Employee-scoped reads resolve an employee ID in this order:
 
 1. Explicit method, CLI, or MCP argument.
@@ -116,6 +122,18 @@ when only a personal context is visible.
 `fetch_schedule()` and `find_employee()` accept `view_id=None`. In that case they use the
 same automatic discovery path; users do not need to know Lightning Bolt's internal view IDs
 for normal provider lookup.
+
+## Token-Safe Summaries
+
+The MCP surface favors compact tools over raw schedule exports:
+
+- employee shift reads and counts use `/schedule/range` with a resolved `emp_id`
+- overlap calculations use two employee-specific schedule reads
+- coverage and open-shift queries use ViewerAPI internally, then return compact rows
+- broad low-level ViewerAPI/schedule tools remain available for debugging and exports
+
+Compact responses include count/truncation metadata so clients can tell when output was
+capped.
 
 ## Models And Raw Payloads
 
@@ -169,6 +187,14 @@ CLI commands:
 - `templates`
 - `viewerapi`
 - `discover`
+- `diagnose`
+- `my-shifts`
+- `employee-shifts`
+- `count-shifts`
+- `overlaps`
+- `who-is-working`
+- `open-shifts`
+- `working-with`
 - `schedule`
 - `personal-schedule`
 - `subscription`
@@ -176,7 +202,8 @@ CLI commands:
 - `feed`
 
 Commands accept `--output` for explicit file output and `--include-raw` where raw payloads
-are useful.
+are useful. Prefer the compact schedule commands for normal user-facing workflows; use
+`viewerapi`, `schedule`, and `personal-schedule` for low-level inspection or exports.
 
 ## MCP Server
 

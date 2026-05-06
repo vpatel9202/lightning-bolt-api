@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime
+from datetime import date as Date
+from datetime import datetime as DateTime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -146,6 +148,88 @@ class Slot(RawModel):
     @property
     def has_any_note(self) -> bool:
         return bool(self.has_note or self.note or self.request_note or self.decision_note)
+
+
+class CompactSlot(BaseModel):
+    date: Date | None = None
+    start_time: DateTime | None = None
+    stop_time: DateTime | None = None
+    template_id: int | None = None
+    template_name: str | None = None
+    assignment_id: int | None = None
+    assignment_name: str | None = None
+    emp_id: int | None = None
+    display_name: str | None = None
+    compact_name: str | None = None
+    is_open_shift: bool = False
+
+
+class ResultMetadata(BaseModel):
+    total_matches: int = 0
+    returned: int = 0
+    truncated: bool = False
+
+
+class EmployeeRef(BaseModel):
+    emp_id: int | None = None
+    display_name: str | None = None
+    compact_name: str | None = None
+
+
+class EmployeeScheduleSummary(BaseModel):
+    employee: EmployeeRef
+    start_date: Date
+    end_date: Date
+    shift_count: int = 0
+    shifts: list[CompactSlot] = Field(default_factory=list)
+    metadata: ResultMetadata = Field(default_factory=ResultMetadata)
+
+
+class ShiftCountSummary(BaseModel):
+    employee: EmployeeRef
+    start_date: Date
+    end_date: Date
+    shift_count: int = 0
+    group_by: str = "none"
+    groups: dict[str, int] = Field(default_factory=dict)
+
+
+class DailyCoverage(BaseModel):
+    date: Date
+    working_count: int = 0
+    workers: list[CompactSlot] = Field(default_factory=list)
+
+
+class DailyCoverageSummary(BaseModel):
+    start_date: Date
+    end_date: Date
+    days: list[DailyCoverage] = Field(default_factory=list)
+    metadata: ResultMetadata = Field(default_factory=ResultMetadata)
+
+
+class OpenShiftSummary(BaseModel):
+    start_date: Date
+    end_date: Date
+    open_shift_count: int = 0
+    shifts: list[CompactSlot] = Field(default_factory=list)
+    metadata: ResultMetadata = Field(default_factory=ResultMetadata)
+
+
+class ShiftOverlap(BaseModel):
+    date: Date | None = None
+    employee_a_shift: CompactSlot
+    employee_b_shift: CompactSlot
+
+
+class OverlapSummary(BaseModel):
+    employee_a: EmployeeRef
+    employee_b: EmployeeRef
+    start_date: Date
+    end_date: Date
+    overlap_count: int = 0
+    overlap_days: list[date] = Field(default_factory=list)
+    overlaps: list[ShiftOverlap] = Field(default_factory=list)
+    metadata: ResultMetadata = Field(default_factory=ResultMetadata)
 
 
 class ViewerApiResponse(RawModel):

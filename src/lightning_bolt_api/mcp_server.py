@@ -15,7 +15,13 @@ from lightning_bolt_api.client import LightningBoltClient, model_to_jsonable
 def build_server(*, host: str = "127.0.0.1", port: int = 8000) -> FastMCP:
     mcp = FastMCP(
         "lightning-bolt-api",
-        instructions="Read-only Lightning Bolt API access. Credentials come from environment.",
+        instructions=(
+            "Read-only Lightning Bolt API access. Credentials come from environment. "
+            "Prefer compact tools such as lb_get_my_shifts, lb_get_employee_shifts, "
+            "lb_count_employee_shifts, lb_find_overlapping_shifts, lb_who_is_working, "
+            "and lb_list_open_shifts. Avoid broad raw ViewerAPI tools unless the user "
+            "asks for debugging/raw data because they can return very large payloads."
+        ),
         host=host,
         port=port,
         streamable_http_path="/mcp",
@@ -84,6 +90,150 @@ def build_server(*, host: str = "127.0.0.1", port: int = 8000) -> FastMCP:
                     tz=tz or os.getenv("LB_DEFAULT_TZ", "UTC"),
                 ),
                 include_raw=include_raw,
+            )
+
+    @mcp.tool()
+    async def lb_get_my_shifts(
+        start_date: str,
+        end_date: str,
+        include_details: bool = True,
+        max_results: int = 200,
+    ) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_my_shifts(
+                    start_date=start_date,
+                    end_date=end_date,
+                    include_details=include_details,
+                    max_results=max_results,
+                ),
+                include_raw=False,
+            )
+
+    @mcp.tool()
+    async def lb_get_employee_shifts(
+        employee: str,
+        start_date: str,
+        end_date: str,
+        include_details: bool = True,
+        max_results: int = 200,
+    ) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_employee_shifts(
+                    employee,
+                    start_date=start_date,
+                    end_date=end_date,
+                    include_details=include_details,
+                    max_results=max_results,
+                ),
+                include_raw=False,
+            )
+
+    @mcp.tool()
+    async def lb_count_employee_shifts(
+        employee: str,
+        start_date: str,
+        end_date: str,
+        group_by: str = "none",
+    ) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.count_employee_shifts(
+                    employee,
+                    start_date=start_date,
+                    end_date=end_date,
+                    group_by=group_by,
+                ),
+                include_raw=False,
+            )
+
+    @mcp.tool()
+    async def lb_find_overlapping_shifts(
+        employee_b: str,
+        start_date: str,
+        end_date: str,
+        employee_a: str | None = None,
+        max_results: int = 200,
+    ) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.find_overlapping_shifts(
+                    employee_a,
+                    employee_b,
+                    start_date=start_date,
+                    end_date=end_date,
+                    max_results=max_results,
+                ),
+                include_raw=False,
+            )
+
+    @mcp.tool()
+    async def lb_who_is_working(
+        start_date: str,
+        end_date: str,
+        view_id: int | None = None,
+        template_ids: list[int] | None = None,
+        include_open: bool = False,
+        max_results: int = 200,
+        tz: str | None = None,
+    ) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.who_is_working(
+                    start_date=start_date,
+                    end_date=end_date,
+                    view_id=view_id,
+                    template_ids=template_ids,
+                    include_open=include_open,
+                    max_results=max_results,
+                    tz=tz or os.getenv("LB_DEFAULT_TZ", "UTC"),
+                ),
+                include_raw=False,
+            )
+
+    @mcp.tool()
+    async def lb_list_open_shifts(
+        start_date: str,
+        end_date: str,
+        view_id: int | None = None,
+        template_ids: list[int] | None = None,
+        max_results: int = 200,
+        tz: str | None = None,
+    ) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.list_open_shifts(
+                    start_date=start_date,
+                    end_date=end_date,
+                    view_id=view_id,
+                    template_ids=template_ids,
+                    max_results=max_results,
+                    tz=tz or os.getenv("LB_DEFAULT_TZ", "UTC"),
+                ),
+                include_raw=False,
+            )
+
+    @mcp.tool()
+    async def lb_who_is_working_with(
+        employee: str,
+        start_date: str,
+        end_date: str,
+        view_id: int | None = None,
+        max_results: int = 200,
+        tz: str | None = None,
+    ) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.who_is_working_with(
+                    employee,
+                    start_date=start_date,
+                    end_date=end_date,
+                    view_id=view_id,
+                    max_results=max_results,
+                    tz=tz or os.getenv("LB_DEFAULT_TZ", "UTC"),
+                ),
+                include_raw=False,
             )
 
     @mcp.tool()

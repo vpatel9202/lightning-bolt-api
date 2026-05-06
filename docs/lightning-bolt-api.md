@@ -539,6 +539,19 @@ The private API may silently ignore unknown or malformed fields. For ViewerAPI, 
 Do not infer that a successful response means every field in a request body was honored.
 Validate request dates and keep request payloads minimal.
 
+ViewerAPI has no confirmed server-side field projection or result-limit parameter. A broad
+view/date-range request may return a large schedule grid plus metadata. Libraries that
+serve LLM or MCP clients should summarize ViewerAPI results before returning them.
+
+For employee-specific questions, prefer:
+
+```text
+GET https://lbapi.lightning-bolt.com/schedule/range/?start_date=YYYYMMDD&end_date=YYYYMMDD&listed=true&emp_id=N
+```
+
+Use broad ViewerAPI reads for coverage, open-shift, and debugging workflows where a full
+view is actually needed.
+
 ## Security And Sanitization
 
 Never log or commit:
@@ -570,6 +583,7 @@ A new client in another language should implement:
 - strict `YYYYMMDD` request-date validation
 - ViewerAPI read with optional `view_id`
 - schedule range, subscription, and employee feed reads
+- compact schedule summaries for model-facing consumers
 - derived calendar subscription URL construction from subscription `md5`
 - raw payload preservation
 - local session cache that stores auth state only
