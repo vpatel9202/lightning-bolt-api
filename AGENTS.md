@@ -28,6 +28,8 @@ Implemented:
 Start with:
 
 - `README.md` for user-facing setup and examples.
+- `docs/lightning-bolt-api.md` for reverse-engineered API behavior and reimplementation
+  guidance.
 - `docs/architecture.md` for how the implemented system works.
 - `docs/mcp.md` for MCP operation and tool reference.
 - `docs/investigation-findings.md` for historical reverse-engineering evidence.

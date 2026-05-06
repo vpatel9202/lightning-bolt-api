@@ -2,6 +2,9 @@
 
 This document describes the current implementation of `lightning-bolt-api`.
 
+For protocol-level details needed to reimplement the client in another language, see
+[Lightning Bolt API Reference](lightning-bolt-api.md).
+
 ## Purpose
 
 The package provides read-only access to Lightning Bolt's JSON endpoints. It normalizes

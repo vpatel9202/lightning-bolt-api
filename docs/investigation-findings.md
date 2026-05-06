@@ -6,6 +6,7 @@ This document records the live reverse-engineering findings that informed
 For current usage, see:
 
 - [README.md](../README.md)
+- [Lightning Bolt API Reference](lightning-bolt-api.md)
 - [Architecture](architecture.md)
 - [MCP Server](mcp.md)
 

@@ -149,6 +149,8 @@ The core client is async-first. Sync wrappers are not currently provided.
 
 ## Documentation
 
+- [docs/lightning-bolt-api.md](docs/lightning-bolt-api.md): reverse-engineered Lightning
+  Bolt API behavior for reimplementing a client.
 - [docs/architecture.md](docs/architecture.md): how the implemented system works.
 - [docs/mcp.md](docs/mcp.md): MCP transports, configuration, and tool reference.
 - [docs/investigation-findings.md](docs/investigation-findings.md): historical
