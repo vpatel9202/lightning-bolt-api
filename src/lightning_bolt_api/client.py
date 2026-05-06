@@ -25,6 +25,7 @@ from lightning_bolt_api.constants import (
 )
 from lightning_bolt_api.models import (
     ActivityFeed,
+    ContextDiagnostics,
     Dashboard,
     DiscoveredContext,
     EmployeeMatch,
@@ -262,13 +263,14 @@ class LightningBoltClient:
 
     async def discover_context(self) -> DiscoveredContext:
         dashboard = await self.get_dashboard()
-        if dashboard.views:
+        dashboard_views = _usable_views(dashboard.views)
+        if dashboard_views:
             return DiscoveredContext(
                 customer_id=self.session.customer_id,
                 emp_id=self.session.emp_id,
                 user_id=self.session.user_id,
                 dashboard_view_count=len(dashboard.views),
-                default_view=dashboard.views[0],
+                default_view=dashboard_views[0],
                 views=dashboard.views,
                 can_omit_view_id=True,
                 default_tz=self.default_tz,
@@ -278,7 +280,7 @@ class LightningBoltClient:
 
         default_view_id = os.getenv("LB_DEFAULT_VIEW_ID")
         if default_view_id:
-            viewer = await self.get_viewerapi(view_id=int(default_view_id))
+            viewer = await self._get_viewerapi_direct(view_id=int(default_view_id))
             views = _viewer_views_or_default(viewer)
             return DiscoveredContext(
                 customer_id=self.session.customer_id,
@@ -290,10 +292,13 @@ class LightningBoltClient:
                 can_omit_view_id=True,
                 default_tz=self.default_tz,
                 source="env_default_view_id",
+                personnel_count=len(viewer.personnel),
+                slot_count=len(viewer.slots),
+                is_personal_only=_is_personal_only_viewer(viewer, self.session.emp_id),
                 raw={"dashboard": dashboard.raw, "viewerapi": viewer.raw},
             )
 
-        viewer = await self.get_viewerapi()
+        viewer, source = await self._get_auto_viewerapi()
         views = _viewer_views_or_default(viewer)
         return DiscoveredContext(
             customer_id=self.session.customer_id,
@@ -304,7 +309,11 @@ class LightningBoltClient:
             views=views,
             can_omit_view_id=True,
             default_tz=self.default_tz,
-            source="viewerapi_default_context",
+            source=source,
+            personnel_count=len(viewer.personnel),
+            slot_count=len(viewer.slots),
+            is_personal_only=_is_personal_only_viewer(viewer, self.session.emp_id),
+            warnings=_context_warnings(viewer, source, self.session.emp_id),
             raw={"dashboard": dashboard.raw, "viewerapi": viewer.raw},
         )
 
@@ -313,6 +322,29 @@ class LightningBoltClient:
         return viewer.templates
 
     async def get_viewerapi(
+        self,
+        *,
+        view_id: int | None = None,
+        start_date: date | str | None = None,
+        end_date: date | str | None = None,
+        tz: str | None = None,
+        auto_discover_view: bool = True,
+    ) -> ViewerApiResponse:
+        if view_id is None and auto_discover_view:
+            viewer, _source = await self._get_auto_viewerapi(
+                start_date=start_date,
+                end_date=end_date,
+                tz=tz,
+            )
+            return viewer
+        return await self._get_viewerapi_direct(
+            view_id=view_id,
+            start_date=start_date,
+            end_date=end_date,
+            tz=tz,
+        )
+
+    async def _get_viewerapi_direct(
         self,
         *,
         view_id: int | None = None,
@@ -346,11 +378,8 @@ class LightningBoltClient:
         template_ids: list[int] | None = None,
         tz: str | None = None,
     ) -> list[Slot]:
-        resolved_view_id = view_id
-        if resolved_view_id is None and os.getenv("LB_DEFAULT_VIEW_ID"):
-            resolved_view_id = int(os.environ["LB_DEFAULT_VIEW_ID"])
         viewer = await self.get_viewerapi(
-            view_id=resolved_view_id,
+            view_id=view_id,
             start_date=start_date,
             end_date=end_date,
             tz=tz,
@@ -404,14 +433,34 @@ class LightningBoltClient:
     ) -> list[EmployeeMatch]:
         if not query.strip():
             raise ValueError("Employee query must not be empty.")
-        resolved_view_id = view_id
-        if resolved_view_id is None and os.getenv("LB_DEFAULT_VIEW_ID"):
-            resolved_view_id = int(os.environ["LB_DEFAULT_VIEW_ID"])
-        viewer = await self.get_viewerapi(view_id=resolved_view_id, tz=tz)
+        viewer = await self.get_viewerapi(view_id=view_id, tz=tz)
         matches = [_score_personnel(query, personnel) for personnel in viewer.personnel]
         matches = [match for match in matches if match.score >= min_score]
         matches.sort(key=lambda match: (-match.score, match.display_name or ""))
         return matches[:limit]
+
+    async def diagnose_context(self) -> ContextDiagnostics:
+        viewer, source = await self._get_auto_viewerapi()
+        selected_view_id = viewer.view_context.view_id if viewer.view_context else None
+        return ContextDiagnostics(
+            customer_id=self.session.customer_id,
+            emp_id=self.session.emp_id,
+            user_id=self.session.user_id,
+            default_tz=self.default_tz,
+            env={
+                "LB_DEFAULT_VIEW_ID": bool(os.getenv("LB_DEFAULT_VIEW_ID")),
+                "LB_EMP_ID": bool(os.getenv("LB_EMP_ID")),
+                "LB_EMPLOYEE_NAME": bool(os.getenv("LB_EMPLOYEE_NAME")),
+                "LB_VIEW_PROBE_MAX": bool(os.getenv("LB_VIEW_PROBE_MAX")),
+            },
+            source=source,
+            selected_view_id=selected_view_id,
+            personnel_count=len(viewer.personnel),
+            slot_count=len(viewer.slots),
+            is_personal_only=_is_personal_only_viewer(viewer, self.session.emp_id),
+            warnings=_context_warnings(viewer, source, self.session.emp_id),
+            raw={"view_context": viewer.view_context.raw if viewer.view_context else None},
+        )
 
     async def resolve_emp_id(
         self,
@@ -465,6 +514,87 @@ class LightningBoltClient:
             customer_id=resolved_customer_id,
             emp_id=resolved_emp_id,
         )
+
+    async def _get_auto_viewerapi(
+        self,
+        *,
+        start_date: date | str | None = None,
+        end_date: date | str | None = None,
+        tz: str | None = None,
+    ) -> tuple[ViewerApiResponse, str]:
+        env_view_id = os.getenv("LB_DEFAULT_VIEW_ID")
+        if env_view_id:
+            return (
+                await self._get_viewerapi_direct(
+                    view_id=int(env_view_id),
+                    start_date=start_date,
+                    end_date=end_date,
+                    tz=tz,
+                ),
+                "env_default_view_id",
+            )
+
+        if self.session.discovered_view_id is not None:
+            try:
+                return (
+                    await self._get_viewerapi_direct(
+                        view_id=self.session.discovered_view_id,
+                        start_date=start_date,
+                        end_date=end_date,
+                        tz=tz,
+                    ),
+                    "cached_discovered_view_id",
+                )
+            except httpx.HTTPStatusError as exc:
+                if exc.response.status_code not in {403, 404}:
+                    raise
+                self.session.discovered_view_id = None
+                self._persist_session()
+
+        default_viewer = await self._get_viewerapi_direct(
+            start_date=start_date,
+            end_date=end_date,
+            tz=tz,
+        )
+        if not _is_personal_only_viewer(default_viewer, self.session.emp_id):
+            return default_viewer, "viewerapi_default_context"
+
+        discovered = await self._discover_broad_view(default_viewer, tz=tz)
+        if discovered is None:
+            return default_viewer, "viewerapi_personal_fallback"
+
+        view_id, viewer = discovered
+        self.session.discovered_view_id = view_id
+        self._persist_session()
+        if start_date is not None or end_date is not None:
+            viewer = await self._get_viewerapi_direct(
+                view_id=view_id,
+                start_date=start_date,
+                end_date=end_date,
+                tz=tz,
+            )
+        return viewer, "auto_discovered_view_id"
+
+    async def _discover_broad_view(
+        self,
+        default_viewer: ViewerApiResponse,
+        *,
+        tz: str | None = None,
+    ) -> tuple[int, ViewerApiResponse] | None:
+        best: tuple[int, ViewerApiResponse] | None = None
+        best_score = _viewer_breadth_score(default_viewer)
+        for view_id in _candidate_view_ids(default_viewer):
+            try:
+                viewer = await self._get_viewerapi_direct(view_id=view_id, tz=tz)
+            except httpx.HTTPStatusError as exc:
+                if exc.response.status_code in {403, 404}:
+                    continue
+                raise
+            score = _viewer_breadth_score(viewer)
+            if score > best_score:
+                best = (view_id, viewer)
+                best_score = score
+        return best
 
     async def _exchange_refresh_token(self, refresh_token: str) -> None:
         response = await self.http.post(
@@ -554,6 +684,104 @@ def _viewer_views_or_default(viewer: ViewerApiResponse) -> list[View]:
             raw={"source": "viewerapi_default_context", "view_id": None},
         )
     ]
+
+
+def _usable_views(views: list[View]) -> list[View]:
+    return [view for view in views if view.view_id and view.view_id > 0]
+
+
+def _is_personal_only_viewer(viewer: ViewerApiResponse, emp_id: int | None) -> bool:
+    personnel_ids = {person.emp_id for person in viewer.personnel if person.emp_id is not None}
+    slot_emp_ids = {slot.emp_id for slot in viewer.slots if slot.emp_id is not None}
+    if len(personnel_ids) > 1:
+        return False
+    if len(viewer.personnel) > 1:
+        return False
+    if len(personnel_ids) == 1 and emp_id is not None and emp_id not in personnel_ids:
+        return False
+    if not viewer.personnel:
+        if len(slot_emp_ids) != 1:
+            return False
+        if emp_id is not None and emp_id not in slot_emp_ids:
+            return False
+    usable_views = _usable_views(viewer.views)
+    if viewer.view_context and viewer.view_context.view_id and viewer.view_context.view_id > 0:
+        usable_views.append(viewer.view_context)
+    return not usable_views
+
+
+def _viewer_breadth_score(viewer: ViewerApiResponse) -> int:
+    personnel_ids = {person.emp_id for person in viewer.personnel if person.emp_id is not None}
+    slot_emp_ids = {slot.emp_id for slot in viewer.slots if slot.emp_id is not None}
+    return (len(personnel_ids) * 100_000) + (len(slot_emp_ids) * 1_000) + len(viewer.slots)
+
+
+def _candidate_view_ids(viewer: ViewerApiResponse) -> list[int]:
+    candidates: list[int] = []
+    for view in [*viewer.views, viewer.view_context]:
+        if view and view.view_id:
+            candidates.append(view.view_id)
+    candidates.extend(_extract_view_ids(viewer.raw))
+    max_view_id = _probe_max_view_id()
+    candidates.extend(range(1, max_view_id + 1))
+    return _dedupe_positive_ints(candidates, max_value=max_view_id)
+
+
+def _extract_view_ids(value: Any) -> list[int]:
+    found: list[int] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            key_norm = str(key).lower()
+            if "view" in key_norm:
+                parsed = _coerce_int(item)
+                if parsed is not None:
+                    found.append(parsed)
+            found.extend(_extract_view_ids(item))
+    elif isinstance(value, list):
+        for item in value:
+            found.extend(_extract_view_ids(item))
+    return found
+
+
+def _probe_max_view_id() -> int:
+    raw = os.getenv("LB_VIEW_PROBE_MAX", "100")
+    try:
+        return max(0, min(int(raw), 1000))
+    except ValueError:
+        return 100
+
+
+def _coerce_int(value: Any) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _dedupe_positive_ints(values: list[int], *, max_value: int) -> list[int]:
+    deduped: list[int] = []
+    seen: set[int] = set()
+    for value in values:
+        if value <= 0 or value > max_value or value in seen:
+            continue
+        deduped.append(value)
+        seen.add(value)
+    return deduped
+
+
+def _context_warnings(
+    viewer: ViewerApiResponse,
+    source: str,
+    emp_id: int | None,
+) -> list[str]:
+    if not _is_personal_only_viewer(viewer, emp_id):
+        return []
+    if source == "viewerapi_personal_fallback":
+        return [
+            "Only the authenticated user's personal schedule/personnel were visible. "
+            "Broader view discovery did not find an accessible view."
+        ]
+    return ["The selected ViewerAPI context appears to be personal-only."]
 
 
 def model_to_jsonable(model: Any, *, include_raw: bool = True) -> Any:

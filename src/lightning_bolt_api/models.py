@@ -76,6 +76,24 @@ class DiscoveredContext(RawModel):
     can_omit_view_id: bool = False
     default_tz: str = "UTC"
     source: str = "unknown"
+    personnel_count: int | None = None
+    slot_count: int | None = None
+    is_personal_only: bool | None = None
+    warnings: list[str] = Field(default_factory=list)
+
+
+class ContextDiagnostics(RawModel):
+    customer_id: int | None = None
+    emp_id: int | None = None
+    user_id: int | None = None
+    default_tz: str = "UTC"
+    env: dict[str, bool] = Field(default_factory=dict)
+    source: str = "unknown"
+    selected_view_id: int | None = None
+    personnel_count: int = 0
+    slot_count: int = 0
+    is_personal_only: bool = False
+    warnings: list[str] = Field(default_factory=list)
 
 
 class Slot(RawModel):
@@ -170,4 +188,5 @@ class SessionState(BaseModel):
     customer_id: int | None = None
     emp_id: int | None = None
     user_id: int | None = None
+    discovered_view_id: int | None = None
     cookies: dict[str, str] = Field(default_factory=dict)

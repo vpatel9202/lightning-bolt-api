@@ -93,24 +93,29 @@ Employee-scoped reads resolve an employee ID in this order:
 3. `LB_EMPLOYEE_NAME`, fuzzy-matched against ViewerAPI `personnel`.
 4. Authenticated session employee ID.
 
-Fuzzy matching is intended for discovery and first-run convenience. It uses
-`LB_DEFAULT_VIEW_ID` when configured and filters weak matches by default. Stable
-automation should use `LB_EMP_ID`.
+Fuzzy matching is intended for discovery and first-run convenience. It uses automatic
+broad-view discovery when no explicit view ID is supplied and filters weak matches by
+default. Stable automation should use `LB_EMP_ID` after the correct employee has been
+identified.
 
 ## Discovery
 
 The client discovers usable context in this order:
 
-1. Dashboard `views`, when present.
+1. Dashboard `views`, when they contain usable nonzero view IDs.
 2. `LB_DEFAULT_VIEW_ID`, when configured.
-3. ViewerAPI without `view_id`, using Lightning Bolt's default context.
+3. Cached auto-discovered view ID from the session cache.
+4. ViewerAPI without `view_id`.
+5. If that response appears personal-only, bounded read-only probing for a broader
+   accessible ViewerAPI view.
 
 `discover_context()` returns a `DiscoveredContext` model with the source of discovery,
-available views, default view, user IDs, timezone, and whether callers can omit
-`view_id`.
+available views, default view, user IDs, timezone, personnel/slot counts, and warnings
+when only a personal context is visible.
 
-`fetch_schedule()` accepts `view_id=None`. In that case it uses `LB_DEFAULT_VIEW_ID` when
-available, otherwise it omits `view_id` and relies on ViewerAPI default context.
+`fetch_schedule()` and `find_employee()` accept `view_id=None`. In that case they use the
+same automatic discovery path; users do not need to know Lightning Bolt's internal view IDs
+for normal provider lookup.
 
 ## Models And Raw Payloads
 

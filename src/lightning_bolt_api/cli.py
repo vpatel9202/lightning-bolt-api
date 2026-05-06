@@ -161,6 +161,24 @@ def discover(
 
 
 @app.command()
+def diagnose(
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+    include_raw: Annotated[
+        bool, typer.Option(help="Include preserved raw Lightning Bolt JSON.")
+    ] = False,
+) -> None:
+    """Report the active schedule/personnel context without exposing secrets."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(await client.diagnose_context(), include_raw=include_raw)
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command()
 def schedule(
     start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
     end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],

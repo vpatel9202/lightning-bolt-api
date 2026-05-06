@@ -396,12 +396,16 @@ A robust client should not require the user to know a view ID.
 
 Recommended discovery order:
 
-1. Call dashboard and use dashboard views if present.
+1. Call dashboard and use dashboard views if they contain usable nonzero IDs.
 2. Use a configured default view ID if the user provided one.
-3. Call ViewerAPI without `view_id` and use `view_context` as the default context.
+3. Reuse a cached auto-discovered view ID from the session cache.
+4. Call ViewerAPI without `view_id`.
+5. If the default response appears personal-only, probe bounded read-only candidate view
+   IDs and choose the broadest accessible ViewerAPI response.
 
-Schedule reads can also omit `view_id`. In that case, either use a configured default view
-ID or omit the field and let Lightning Bolt return the default context.
+Schedule and personnel-discovery reads can omit `view_id`. The library should not require
+users to know Lightning Bolt's internal view IDs; a configured default view is an override,
+not a prerequisite.
 
 ## Personal Schedule Endpoint
 

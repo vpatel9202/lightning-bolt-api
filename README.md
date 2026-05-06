@@ -43,17 +43,21 @@ LB_SESSION_CACHE=session-cache/session.json
 LB_EMP_ID=
 LB_EMPLOYEE_NAME=
 LB_DEFAULT_VIEW_ID=
+LB_VIEW_PROBE_MAX=100
 LB_DEFAULT_TZ=America/Chicago
 ```
 
-`LB_DEFAULT_VIEW_ID` is optional. If it is not set, the client calls ViewerAPI without a
-view ID and uses Lightning Bolt's default context.
+`LB_DEFAULT_VIEW_ID` is optional. Normal schedule and employee-discovery calls first try
+Lightning Bolt's default context; if it appears to be a personal-only "Me" context, the
+client probes accessible read-only ViewerAPI views, selects the broadest usable context,
+and caches the discovered view ID in the session cache. Set `LB_DEFAULT_VIEW_ID` only when
+you want to force a specific view. `LB_VIEW_PROBE_MAX` caps the numeric fallback probe
+range used only when the default context appears personal-only.
 
 `LB_EMP_ID` is the preferred way to set the default employee for personal schedule,
 subscription, and feed reads. If the ID is unknown, use `lb-api find-employee "name"` or
 set `LB_EMPLOYEE_NAME` for fuzzy matching against visible personnel. Employee lookup uses
-`LB_DEFAULT_VIEW_ID` when it is set, which is useful when Lightning Bolt's default "Me"
-context only exposes the authenticated user.
+the same automatic broad-view discovery as schedule reads.
 
 Security rules:
 
@@ -70,6 +74,7 @@ explicitly want to write a file.
 ```bash
 uv run lb-api login
 uv run lb-api discover
+uv run lb-api diagnose
 uv run lb-api views
 uv run lb-api schedule --start 20260501 --end 20260507
 ```
@@ -81,6 +86,7 @@ Common commands:
 
 ```bash
 uv run lb-api dashboard
+uv run lb-api diagnose
 uv run lb-api templates --view-id 123
 uv run lb-api viewerapi --start 20260501 --end 20260531
 uv run lb-api viewerapi --view-id 123 --start 20260501 --end 20260531

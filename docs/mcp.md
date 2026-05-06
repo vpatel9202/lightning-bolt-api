@@ -15,6 +15,7 @@ Configure the server with environment variables or mounted secrets:
 | `LB_EMP_ID` | No | Preferred default employee ID for employee-scoped reads. |
 | `LB_EMPLOYEE_NAME` | No | Fuzzy-match fallback when the employee ID is unknown. |
 | `LB_DEFAULT_VIEW_ID` | No | Optional view override. Discovery works without it. |
+| `LB_VIEW_PROBE_MAX` | No | Numeric fallback probe cap. Defaults to `100`. |
 | `LB_DEFAULT_TZ` | No | IANA timezone. Defaults to `UTC` if unset. |
 
 Credentials are intentionally not accepted as normal MCP tool arguments. Tool arguments
@@ -29,9 +30,9 @@ lb_discover_context
 ```
 
 This confirms authentication and returns the usable default context. If dashboard metadata
-does not list views, the server calls ViewerAPI without `view_id` and uses Lightning
-Bolt's default context. A first-time user does not need to know a view ID before fetching
-schedule data.
+does not list usable views and the default ViewerAPI response appears personal-only, the
+server probes bounded read-only candidate views and caches the broadest accessible result.
+A first-time user does not need to know a view ID before fetching schedule data.
 
 Then fetch schedule data with:
 
@@ -108,13 +109,22 @@ Returns current discovery metadata:
 - whether callers can omit `view_id`
 - default timezone
 - discovery source
+- personnel and slot counts
+- warnings when only a personal context is visible
 
 Use this as the first tool when the user does not know a Lightning Bolt view ID.
 
+### `lb_diagnose_context(include_raw=false)`
+
+Reports the active schedule/personnel context without exposing secrets. It includes env
+flag presence, selected view ID, discovery source, personnel count, slot count, and
+warnings. Use this when employee lookup unexpectedly returns no matches.
+
 ### `lb_list_views(include_raw=false)`
 
-Lists available views. If dashboard views are empty, falls back to ViewerAPI default
-context.
+Lists available views from the discovered context. If Lightning Bolt only returns
+synthetic `view_id=0` views for the personal context, automatic discovery may still select
+a broader usable view for schedule and employee reads.
 
 ### `lb_get_dashboard(include_raw=false)`
 
@@ -137,12 +147,13 @@ Calls ViewerAPI and returns normalized viewer state:
 - templates
 - holidays
 
-`view_id` may be omitted to use Lightning Bolt's default context.
+`view_id` may be omitted. In that case the client uses automatic broad-view discovery when
+the default context appears personal-only.
 
 ### `lb_fetch_schedule_range(start_date, end_date, view_id?, template_ids?, tz?, include_raw=false)`
 
 Returns schedule slots for a date range. `view_id` is optional. If omitted, the client uses
-`LB_DEFAULT_VIEW_ID` when set, otherwise it calls ViewerAPI without `view_id`.
+automatic broad-view discovery. `LB_DEFAULT_VIEW_ID` is only an override.
 
 ### `lb_get_subscription(emp_id?, include_raw=false)`
 
@@ -159,8 +170,8 @@ Returns ranked personnel matches so users can discover the stable employee ID to
 `LB_EMP_ID`.
 
 Each match includes `emp_id`, score, visible names, and matched fields. The tool uses
-`LB_DEFAULT_VIEW_ID` when `view_id` is omitted, and filters out weak matches below the
-default minimum score of `0.7`.
+automatic broad-view discovery when `view_id` is omitted, and filters out weak matches
+below the default minimum score of `0.7`.
 
 ### `lb_get_employee_feed(customer_id?, emp_id?, since?, include_raw=false)`
 
