@@ -19,7 +19,8 @@ def build_server(*, host: str = "127.0.0.1", port: int = 8000) -> FastMCP:
             "Read-only Lightning Bolt API access. Credentials come from environment. "
             "Prefer compact tools such as lb_get_my_shifts, lb_get_employee_shifts, "
             "lb_count_employee_shifts, lb_find_overlapping_shifts, lb_who_is_working, "
-            "and lb_list_open_shifts. For counts or dates, use detail_level='count' "
+            "lb_list_open_shifts, and lb_get_my_shift_trades. For counts or dates, "
+            "use detail_level='count' "
             "or 'dates'. Avoid broad raw ViewerAPI tools unless the user asks for "
             "debugging/raw data because they can return very large payloads."
         ),
@@ -185,6 +186,60 @@ def build_server(*, host: str = "127.0.0.1", port: int = 8000) -> FastMCP:
                     start_date=start_date,
                     end_date=end_date,
                     group_by=group_by,
+                ),
+                include_raw=False,
+            )
+
+    @mcp.tool()
+    async def lb_get_my_shift_trades(
+        start_date: str,
+        end_date: str,
+        view_id: int | None = None,
+        template_ids: list[int] | None = None,
+        template_query: str | None = None,
+        assignment_query: str | None = None,
+        max_results: int = 200,
+        tz: str | None = None,
+    ) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_my_shift_trades(
+                    start_date=start_date,
+                    end_date=end_date,
+                    view_id=view_id,
+                    template_ids=template_ids,
+                    template_query=template_query,
+                    assignment_query=assignment_query,
+                    max_results=max_results,
+                    tz=tz or os.getenv("LB_DEFAULT_TZ", "UTC"),
+                ),
+                include_raw=False,
+            )
+
+    @mcp.tool()
+    async def lb_get_employee_shift_trades(
+        employee: str,
+        start_date: str,
+        end_date: str,
+        view_id: int | None = None,
+        template_ids: list[int] | None = None,
+        template_query: str | None = None,
+        assignment_query: str | None = None,
+        max_results: int = 200,
+        tz: str | None = None,
+    ) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_employee_shift_trades(
+                    employee,
+                    start_date=start_date,
+                    end_date=end_date,
+                    view_id=view_id,
+                    template_ids=template_ids,
+                    template_query=template_query,
+                    assignment_query=assignment_query,
+                    max_results=max_results,
+                    tz=tz or os.getenv("LB_DEFAULT_TZ", "UTC"),
                 ),
                 include_raw=False,
             )

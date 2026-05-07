@@ -5,6 +5,7 @@ import pytest
 from lightning_bolt_api.parsing import (
     decode_dashboard_payload,
     format_lb_date,
+    parse_slot,
     parse_subscription,
     parse_viewerapi,
 )
@@ -37,6 +38,33 @@ def test_viewerapi_fixture_parses_slots(fixture_payload: dict) -> None:
     assert parsed.view_context.view_id == 123
     assert parsed.slots
     assert parsed.slots[0].raw["slot_uuid"]
+
+
+def test_parse_slot_preserves_reassignment_provenance() -> None:
+    parsed = parse_slot(
+        {
+            "slot_id": 709760,
+            "emp_id": 20319,
+            "original_emp_id": 20066,
+            "modified_by_emp_id": 20097,
+            "modified_by_display_name": "Scheduler",
+            "modified_date": "2026-04-24T08:32:11",
+            "emp_request_id": 12345,
+            "emp_request_status": "approved",
+            "is_pending_request": False,
+            "slot_history": [{"emp_id": 20066}, {"emp_id": 20319}],
+        }
+    )
+
+    assert parsed.original_emp_id == 20066
+    assert parsed.modified_by_emp_id == 20097
+    assert parsed.modified_by_display_name == "Scheduler"
+    assert parsed.modified_date is not None
+    assert parsed.emp_request_id == 12345
+    assert parsed.emp_request_status == "approved"
+    assert parsed.is_pending_request is False
+    assert parsed.slot_history == [{"emp_id": 20066}, {"emp_id": 20319}]
+    assert parsed.assignment_origin_for(20319) == "trade_in"
 
 
 def test_subscription_list_derives_calendar_urls() -> None:

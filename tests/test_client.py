@@ -65,6 +65,57 @@ async def test_login_chain_exchanges_rotated_refresh_token(tmp_path: Path) -> No
 
 @pytest.mark.asyncio
 @respx.mock
+async def test_get_employee_shifts_labels_assignment_origin() -> None:
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+            emp_id=20319,
+        ),
+        session_cache=None,
+    )
+    respx.get(f"{LBAPI_BASE_URL}/schedule/range/").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "data": [
+                    {
+                        "slot_id": 1,
+                        "slot_date": "2026-07-29",
+                        "emp_id": 20319,
+                        "display_name": "Patel, Vash",
+                        "original_emp_id": 20066,
+                    },
+                    {
+                        "slot_id": 2,
+                        "slot_date": "2026-05-08",
+                        "emp_id": 20319,
+                        "display_name": "Patel, Vash",
+                        "original_emp_id": None,
+                        "modified_by_emp_id": 20097,
+                    },
+                ]
+            },
+        )
+    )
+
+    try:
+        summary = await client.get_my_shifts(
+            start_date="20260501",
+            end_date="20260731",
+        )
+    finally:
+        await client.aclose()
+
+    assert [shift.assignment_origin for shift in summary.shifts] == ["trade_in", "regular"]
+    assert summary.shifts[0].original_emp_id == 20066
+    assert summary.shifts[1].modified_by_emp_id == 20097
+
+
+@pytest.mark.asyncio
+@respx.mock
 async def test_viewerapi_uses_confirmed_body_fields() -> None:
     token = jwt_with_claims(exp=int(time.time()) + 3600)
     client = LightningBoltClient(
@@ -193,6 +244,86 @@ async def test_get_subscription_uses_env_emp_id(monkeypatch: pytest.MonkeyPatch)
     assert route.calls.last.request.url.params["emp_id"] == "20319"
     assert subscription.emp_id == 20319
     assert subscription.default_calendar_url is not None
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_employee_shift_trades_uses_broad_schedule_for_trade_outs() -> None:
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+        ),
+        session_cache=None,
+    )
+    respx.post(f"{LBAPI_BASE_URL}/viewerapi").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "personnel": [
+                    {"emp_id": 20319, "display_name": "Vash Patel", "compact_name": "vvp"},
+                    {"emp_id": 20066, "display_name": "Original Person", "compact_name": "OP"},
+                    {"emp_id": 20284, "display_name": "Current Person", "compact_name": "CP"},
+                ],
+                "schedule_data": {
+                    "data": [
+                        {
+                            "emp_id": 20319,
+                            "display_name": "Vash Patel",
+                            "compact_name": "vvp",
+                            "original_emp_id": 20066,
+                            "template": "MD",
+                            "slot_date": "2026-07-29",
+                            "assign_display_name": "A3",
+                            "modified_by_emp_id": 20066,
+                            "modified_by_display_name": "Original Person",
+                            "modified_date": "2026-04-27T12:43:45",
+                            "slot_history": [
+                                {"text": "swap approved", "timestamp": "2026-04-27T12:43:45"}
+                            ],
+                        },
+                        {
+                            "emp_id": 20284,
+                            "display_name": "Current Person",
+                            "compact_name": "CP",
+                            "original_emp_id": 20319,
+                            "template": "MD",
+                            "slot_date": "2026-07-30",
+                            "assign_display_name": "R13",
+                            "note": "Exchanged for 7/30",
+                        },
+                        {
+                            "emp_id": 20284,
+                            "display_name": "Current Person",
+                            "original_emp_id": 20319,
+                            "template": "MD",
+                            "slot_date": "2026-06-30",
+                            "assign_display_name": "A4",
+                        },
+                    ]
+                },
+            },
+        )
+    )
+
+    try:
+        summary = await client.get_employee_shift_trades(
+            "20319",
+            start_date="20260701",
+            end_date="20260731",
+        )
+    finally:
+        await client.aclose()
+
+    assert summary.employee.display_name == "Vash Patel"
+    assert summary.trade_count == 2
+    assert [trade.assignment_origin for trade in summary.trades] == ["trade_in", "trade_out"]
+    assert summary.trades[0].original_display_name == "Original Person"
+    assert summary.trades[0].slot_history[0].text == "swap approved"
+    assert summary.trades[1].display_name == "Current Person"
+    assert summary.trades[1].note == "Exchanged for 7/30"
 
 
 @pytest.mark.asyncio

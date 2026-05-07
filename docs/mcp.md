@@ -59,6 +59,7 @@ MCP clients should prefer intent-level tools that return compact summaries:
 - Use `lb_get_my_shift_dates` when dates alone answer the question.
 - Use `lb_get_employee_shifts` for one named employee's shifts.
 - Use `lb_get_employee_shift_dates` when dates alone answer the question.
+- Use `lb_get_my_shift_trades` or `lb_get_employee_shift_trades` for traded shifts.
 - Use `lb_count_employee_shifts` for "how many shifts?"
 - Use `lb_find_overlapping_shifts` for overlap questions.
 - Use `lb_who_is_working` for date coverage questions.
@@ -201,6 +202,18 @@ schedule. Use this instead of broad schedule tools for one-person questions.
 ### `lb_get_employee_shift_dates(employee, start_date, end_date)`
 
 Date-only shortcut for one employee.
+
+### `lb_get_my_shift_trades(start_date, end_date, view_id?, template_ids?, template_query?, assignment_query?, max_results=200, tz?)`
+
+Returns traded shifts for the configured/authenticated employee, including trade-ins and
+trade-outs. This uses ViewerAPI internally because employee-specific schedule reads do not
+include shifts traded away to another employee.
+
+### `lb_get_employee_shift_trades(employee, start_date, end_date, view_id?, template_ids?, template_query?, assignment_query?, max_results=200, tz?)`
+
+Returns traded shifts for one employee. Rows include current assignee, original employee,
+assignment origin, modification metadata, notes, request flags, and compact slot history
+when Lightning Bolt exposes it.
 
 ### `lb_count_employee_shifts(employee, start_date, end_date, group_by="none")`
 

@@ -405,6 +405,98 @@ def employee_shift_dates(
     _emit(asyncio.run(run()), output)
 
 
+@app.command("my-shift-trades")
+def my_shift_trades(
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    view_id: Annotated[
+        int | None, typer.Option("--view-id", help="Lightning Bolt view ID.")
+    ] = None,
+    template_id: Annotated[
+        list[int] | None, typer.Option("--template-id", help="Filter by template ID.")
+    ] = None,
+    template_query: Annotated[
+        str | None, typer.Option("--template-query", help="Filter by template name/id.")
+    ] = None,
+    assignment_query: Annotated[
+        str | None, typer.Option("--assignment-query", help="Filter by assignment name/id.")
+    ] = None,
+    max_results: Annotated[
+        int, typer.Option("--max-results", help="Maximum trade rows to return.")
+    ] = 200,
+    tz: Annotated[str | None, typer.Option("--tz", help="IANA timezone.")] = None,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Fetch traded shifts for the configured/authenticated employee."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_my_shift_trades(
+                    start_date=start,
+                    end_date=end,
+                    view_id=view_id,
+                    template_ids=template_id,
+                    template_query=template_query,
+                    assignment_query=assignment_query,
+                    max_results=max_results,
+                    tz=tz,
+                ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
+@app.command("employee-shift-trades")
+def employee_shift_trades(
+    employee: Annotated[str, typer.Argument(help="Employee ID or fuzzy name.")],
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    view_id: Annotated[
+        int | None, typer.Option("--view-id", help="Lightning Bolt view ID.")
+    ] = None,
+    template_id: Annotated[
+        list[int] | None, typer.Option("--template-id", help="Filter by template ID.")
+    ] = None,
+    template_query: Annotated[
+        str | None, typer.Option("--template-query", help="Filter by template name/id.")
+    ] = None,
+    assignment_query: Annotated[
+        str | None, typer.Option("--assignment-query", help="Filter by assignment name/id.")
+    ] = None,
+    max_results: Annotated[
+        int, typer.Option("--max-results", help="Maximum trade rows to return.")
+    ] = 200,
+    tz: Annotated[str | None, typer.Option("--tz", help="IANA timezone.")] = None,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """Fetch traded shifts for one employee."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.get_employee_shift_trades(
+                    employee,
+                    start_date=start,
+                    end_date=end,
+                    view_id=view_id,
+                    template_ids=template_id,
+                    template_query=template_query,
+                    assignment_query=assignment_query,
+                    max_results=max_results,
+                    tz=tz,
+                ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
 @app.command("overlaps")
 def overlaps(
     employee_b: Annotated[str, typer.Argument(help="Second employee ID or fuzzy name.")],

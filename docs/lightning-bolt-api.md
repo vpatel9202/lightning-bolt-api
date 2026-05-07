@@ -283,6 +283,14 @@ Each row is a slot record. Common fields:
 | `request_note` | Request note, when present. |
 | `decision_note` | Decision note, when present. |
 | `has_note` | Note presence flag. |
+| `original_emp_id` | Original assigned employee before reassignment, when available. |
+| `modified_by_emp_id` | Employee ID that last modified the slot, when available. |
+| `modified_by_display_name` | Display name for the modifier, when available. |
+| `modified_date` | Slot modification timestamp, when available. |
+| `emp_request_id` | Request identifier, when available. |
+| `emp_request_status` | Request status, when available. |
+| `is_pending_request` | Request pending flag, when available. |
+| `slot_history` | Compact history entries such as swap approval text and timestamps. |
 | `has_change` | Change flag. |
 | `slot_history` | Historical states when returned. |
 | `emp_request_id` | Request ID, when linked. |
@@ -567,6 +575,18 @@ Pending/request flags are visible when Lightning Bolt includes fields such as
 `is_pending`, `is_granted_request`, `request_note`, and `decision_note`. A granted pickup
 may be indistinguishable from a normal assigned shift once the slot is finalized; clients
 should not infer pickup history without a reliable field in the raw slot.
+
+Provider-to-provider trades are visible when `original_emp_id` differs from `emp_id`.
+From the perspective of employee `N`, classify:
+
+- `trade_in`: `emp_id == N` and `original_emp_id` is another employee.
+- `trade_out`: `original_emp_id == N` and `emp_id` is another employee.
+- `regular`: no reassignment, meaning `original_emp_id` is missing or equals `emp_id`.
+- `unknown_reassignment`: reassigned, but no perspective employee matches either side.
+
+Employee-specific `/schedule/range` reads may only include the current employee's visible
+assigned slots, so they can miss trade-outs. Use ViewerAPI plus a post-filter on
+`original_emp_id` to find both sides of a trade.
 
 ## Security And Sanitization
 

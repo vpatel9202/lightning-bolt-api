@@ -44,7 +44,10 @@ from lightning_bolt_api.models import (
     SessionState,
     ShiftCountSummary,
     ShiftOverlap,
+    ShiftTrade,
+    ShiftTradeSummary,
     Slot,
+    SlotHistoryEntry,
     Subscription,
     Template,
     View,
@@ -506,7 +509,10 @@ class LightningBoltClient:
             shift_dates=sorted({slot.slot_date for slot in slots if slot.slot_date is not None})
             if resolved_detail in {"dates", "compact"}
             else [],
-            shifts=[_compact_slot(slot, fields=fields) for slot in limited],
+            shifts=[
+                _compact_slot(slot, fields=fields, perspective_emp_id=emp_id)
+                for slot in limited
+            ],
             metadata=(
                 _metadata(len(slots), len(limited))
                 if resolved_detail == "compact"
@@ -538,6 +544,84 @@ class LightningBoltClient:
             start_date=start_date,
             end_date=end_date,
             detail_level="dates",
+        )
+
+    async def get_my_shift_trades(
+        self,
+        *,
+        start_date: date | str,
+        end_date: date | str,
+        view_id: int | None = None,
+        template_ids: list[int] | None = None,
+        template_query: str | None = None,
+        assignment_query: str | None = None,
+        max_results: int = 200,
+        tz: str | None = None,
+    ) -> ShiftTradeSummary:
+        return await self.get_employee_shift_trades(
+            None,
+            start_date=start_date,
+            end_date=end_date,
+            view_id=view_id,
+            template_ids=template_ids,
+            template_query=template_query,
+            assignment_query=assignment_query,
+            max_results=max_results,
+            tz=tz,
+        )
+
+    async def get_employee_shift_trades(
+        self,
+        employee: str | int | None = None,
+        *,
+        start_date: date | str,
+        end_date: date | str,
+        view_id: int | None = None,
+        template_ids: list[int] | None = None,
+        template_query: str | None = None,
+        assignment_query: str | None = None,
+        max_results: int = 200,
+        tz: str | None = None,
+    ) -> ShiftTradeSummary:
+        emp_id = await self._resolve_employee_arg(employee)
+        viewer = await self.get_viewerapi(
+            view_id=view_id,
+            start_date=start_date,
+            end_date=end_date,
+            tz=tz,
+        )
+        start = _model_date(start_date)
+        end = _model_date(end_date)
+        slots = viewer.slots
+        if template_ids:
+            allowed = set(template_ids)
+            slots = [slot for slot in slots if slot.template_id in allowed]
+        slots = _filter_slots(
+            slots,
+            template_query=template_query,
+            assignment_query=assignment_query,
+        )
+        trades = [
+            slot
+            for slot in slots
+            if _slot_in_date_range(slot, start, end)
+            and slot.assignment_origin_for(emp_id) in {"trade_in", "trade_out"}
+        ]
+        trades.sort(key=lambda slot: (slot.slot_date or date.min, slot.start_time or datetime.min))
+        limited = _limit_items(trades, max_results)
+        personnel = {
+            person.emp_id: person
+            for person in viewer.personnel
+            if person.emp_id is not None
+        }
+        return ShiftTradeSummary(
+            employee=_employee_ref_from_personnel(emp_id, personnel),
+            start_date=start,
+            end_date=end,
+            trade_count=len(trades),
+            trade_dates=sorted({slot.slot_date for slot in trades if slot.slot_date is not None}),
+            trades=[_shift_trade(slot, emp_id, personnel) for slot in limited],
+            metadata=_metadata(len(trades), len(limited)),
         )
 
     async def count_employee_shifts(
@@ -876,7 +960,7 @@ class LightningBoltClient:
             end_date=end_date,
             shift_count=len(upcoming),
             shift_dates=sorted({slot.slot_date for slot in limited if slot.slot_date is not None}),
-            shifts=[_compact_slot(slot) for slot in limited],
+            shifts=[_compact_slot(slot, perspective_emp_id=emp_id) for slot in limited],
             metadata=_metadata(len(upcoming), len(limited)),
         )
 
@@ -1383,6 +1467,7 @@ def _compact_slot(
     *,
     fields: list[str] | None = None,
     provider_type: str | None = None,
+    perspective_emp_id: int | None = None,
 ) -> CompactSlot:
     data = {
         "date": slot.slot_date,
@@ -1401,6 +1486,14 @@ def _compact_slot(
         "is_granted_request": slot.is_granted_request,
         "is_manual_slot": slot.is_manual_slot,
         "has_note": slot.has_note,
+        "original_emp_id": slot.original_emp_id,
+        "assignment_origin": slot.assignment_origin_for(perspective_emp_id),
+        "modified_by_emp_id": slot.modified_by_emp_id,
+        "modified_by_display_name": slot.modified_by_display_name,
+        "modified_date": slot.modified_date,
+        "emp_request_id": slot.emp_request_id,
+        "emp_request_status": slot.emp_request_status,
+        "is_pending_request": slot.is_pending_request,
     }
     if fields:
         allowed = set(fields) | {"is_open_shift", "provider_type"}
@@ -1461,6 +1554,54 @@ def _employee_ref_from_slots(emp_id: int | None, slots: list[Slot]) -> EmployeeR
         emp_id=emp_id,
         display_name=first.display_name if first else None,
         compact_name=first.compact_name if first else None,
+    )
+
+
+def _employee_ref_from_personnel(emp_id: int | None, personnel: dict[int, Any]) -> EmployeeRef:
+    person = personnel.get(emp_id) if emp_id is not None else None
+    return EmployeeRef(
+        emp_id=emp_id,
+        display_name=person.display_name if person else None,
+        compact_name=person.compact_name if person else None,
+    )
+
+
+def _shift_trade(slot: Slot, perspective_emp_id: int, personnel: dict[int, Any]) -> ShiftTrade:
+    original = personnel.get(slot.original_emp_id) if slot.original_emp_id is not None else None
+    return ShiftTrade(
+        date=slot.slot_date,
+        start_time=slot.start_time,
+        stop_time=slot.stop_time,
+        template_id=slot.template_id,
+        template_name=slot.template_name,
+        assignment_id=slot.assign_id,
+        assignment_name=slot.assign_display_name,
+        assignment_origin=slot.assignment_origin_for(perspective_emp_id),
+        emp_id=slot.emp_id,
+        display_name=slot.display_name,
+        compact_name=slot.compact_name,
+        original_emp_id=slot.original_emp_id,
+        original_display_name=original.display_name if original else None,
+        original_compact_name=original.compact_name if original else None,
+        modified_by_emp_id=slot.modified_by_emp_id,
+        modified_by_display_name=slot.modified_by_display_name,
+        modified_date=slot.modified_date,
+        note=slot.note,
+        request_note=slot.request_note,
+        decision_note=slot.decision_note,
+        emp_request_id=slot.emp_request_id,
+        emp_request_status=slot.emp_request_status,
+        is_pending=slot.is_pending,
+        is_granted_request=slot.is_granted_request,
+        is_pending_request=slot.is_pending_request,
+        slot_history=[
+            SlotHistoryEntry(
+                text=item.get("text"),
+                timestamp=item.get("timestamp"),
+            )
+            for item in slot.slot_history
+            if isinstance(item, dict)
+        ],
     )
 
 
