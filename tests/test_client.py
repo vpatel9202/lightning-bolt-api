@@ -614,6 +614,90 @@ async def test_who_is_working_and_open_shifts_return_compact_limited_results() -
 
 @pytest.mark.asyncio
 @respx.mock
+async def test_open_shift_groups_classify_and_filter_requested_dates() -> None:
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+        ),
+        session_cache=None,
+    )
+    respx.post(f"{LBAPI_BASE_URL}/viewerapi").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "schedule_data": {
+                    "data": [
+                        {
+                            "emp_id": 20112,
+                            "display_name": "OPEN 1",
+                            "last_name": "z.Administrative",
+                            "template": "APP TPC",
+                            "slot_date": "2026-05-07",
+                            "assign_display_name": "APP PA",
+                            "is_pending": True,
+                            "is_granted_request": False,
+                            "is_manual_slot": True,
+                        },
+                        {
+                            "emp_id": 20112,
+                            "display_name": "OPEN 1",
+                            "last_name": "z.Administrative",
+                            "template": "BSW Hospital Medicine Dallas MD",
+                            "slot_date": "2026-05-08",
+                            "assign_display_name": "R27",
+                        },
+                        {
+                            "emp_id": 20112,
+                            "display_name": "OPEN 1",
+                            "last_name": "z.Administrative",
+                            "template": "Float",
+                            "slot_date": "2026-05-09",
+                            "assign_display_name": "Flex",
+                        },
+                        {
+                            "emp_id": 20112,
+                            "display_name": "OPEN 1",
+                            "last_name": "z.Administrative",
+                            "template": "APP TPC",
+                            "slot_date": "2026-05-22",
+                            "assign_display_name": "APP PA",
+                        },
+                    ]
+                }
+            },
+        )
+    )
+
+    try:
+        flat = await client.list_open_shifts(start_date="20260507", end_date="20260509")
+        grouped = await client.list_open_shift_groups(
+            start_date="20260507",
+            end_date="20260509",
+            max_results=1,
+        )
+    finally:
+        await client.aclose()
+
+    assert flat.open_shift_count == 3
+    assert [day.isoformat() for day in flat.open_shift_dates] == [
+        "2026-05-07",
+        "2026-05-08",
+        "2026-05-09",
+    ]
+    assert grouped.open_shift_count == 3
+    assert grouped.groups["app"].open_shift_count == 1
+    assert grouped.groups["md"].open_shift_count == 1
+    assert grouped.groups["unknown"].open_shift_count == 1
+    assert grouped.groups["app"].shifts[0].provider_type == "app"
+    assert grouped.groups["app"].shifts[0].is_pending is True
+    assert grouped.groups["app"].metadata.truncated is False
+
+
+@pytest.mark.asyncio
+@respx.mock
 async def test_schedule_summary_paginates_and_filters() -> None:
     token = jwt_with_claims(exp=int(time.time()) + 3600)
     client = LightningBoltClient(

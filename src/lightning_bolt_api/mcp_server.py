@@ -278,6 +278,38 @@ def build_server(*, host: str = "127.0.0.1", port: int = 8000) -> FastMCP:
             )
 
     @mcp.tool()
+    async def lb_list_open_shift_groups(
+        start_date: str,
+        end_date: str,
+        view_id: int | None = None,
+        template_ids: list[int] | None = None,
+        template_query: str | None = None,
+        assignment_query: str | None = None,
+        max_results: int = 200,
+        fields: list[str] | None = None,
+        md_patterns: list[str] | None = None,
+        app_patterns: list[str] | None = None,
+        tz: str | None = None,
+    ) -> dict[str, Any]:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.list_open_shift_groups(
+                    start_date=start_date,
+                    end_date=end_date,
+                    view_id=view_id,
+                    template_ids=template_ids,
+                    template_query=template_query,
+                    assignment_query=assignment_query,
+                    max_results=max_results,
+                    fields=fields,
+                    md_patterns=md_patterns,
+                    app_patterns=app_patterns,
+                    tz=tz or os.getenv("LB_DEFAULT_TZ", "UTC"),
+                ),
+                include_raw=False,
+            )
+
+    @mcp.tool()
     async def lb_get_open_shift_dates(
         start_date: str,
         end_date: str,

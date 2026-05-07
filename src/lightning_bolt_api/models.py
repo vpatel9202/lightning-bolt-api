@@ -117,6 +117,7 @@ class Slot(RawModel):
     assign_display_name: str | None = None
     assign_structure_id: str | None = None
     is_pending: bool | None = None
+    is_granted_request: bool | None = None
     is_manual_slot: bool | None = None
     has_note: bool | None = None
     note: str | None = None
@@ -162,6 +163,11 @@ class CompactSlot(BaseModel):
     display_name: str | None = None
     compact_name: str | None = None
     is_open_shift: bool = False
+    provider_type: str | None = None
+    is_pending: bool | None = None
+    is_granted_request: bool | None = None
+    is_manual_slot: bool | None = None
+    has_note: bool | None = None
 
 
 class ResultMetadata(BaseModel):
@@ -219,6 +225,22 @@ class OpenShiftSummary(BaseModel):
     open_shift_dates: list[Date] = Field(default_factory=list)
     shifts: list[CompactSlot] = Field(default_factory=list)
     metadata: ResultMetadata = Field(default_factory=ResultMetadata)
+
+
+class OpenShiftGroup(BaseModel):
+    provider_type: str
+    open_shift_count: int = 0
+    open_shift_dates: list[Date] = Field(default_factory=list)
+    shifts: list[CompactSlot] = Field(default_factory=list)
+    metadata: ResultMetadata = Field(default_factory=ResultMetadata)
+
+
+class OpenShiftGroupSummary(BaseModel):
+    start_date: Date
+    end_date: Date
+    open_shift_count: int = 0
+    open_shift_dates: list[Date] = Field(default_factory=list)
+    groups: dict[str, OpenShiftGroup] = Field(default_factory=dict)
 
 
 class ScheduleRangeSummary(BaseModel):

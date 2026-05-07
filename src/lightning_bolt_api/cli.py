@@ -557,6 +557,63 @@ def open_shifts(
     _emit(asyncio.run(run()), output)
 
 
+@app.command("open-shift-groups")
+def open_shift_groups(
+    start: Annotated[str, typer.Option("--start", help="Start date as YYYYMMDD.")],
+    end: Annotated[str, typer.Option("--end", help="End date as YYYYMMDD.")],
+    view_id: Annotated[
+        int | None, typer.Option("--view-id", help="Lightning Bolt view ID.")
+    ] = None,
+    template_id: Annotated[
+        list[int] | None, typer.Option("--template-id", help="Filter by template ID.")
+    ] = None,
+    template_query: Annotated[
+        str | None, typer.Option("--template-query", help="Filter by template name/id.")
+    ] = None,
+    assignment_query: Annotated[
+        str | None, typer.Option("--assignment-query", help="Filter by assignment name/id.")
+    ] = None,
+    max_results: Annotated[
+        int, typer.Option("--max-results", help="Maximum open shifts per group.")
+    ] = 200,
+    field: Annotated[
+        list[str] | None, typer.Option("--field", help="Compact slot field to include.")
+    ] = None,
+    md_pattern: Annotated[
+        list[str] | None, typer.Option("--md-pattern", help="Regex for MD open shifts.")
+    ] = None,
+    app_pattern: Annotated[
+        list[str] | None, typer.Option("--app-pattern", help="Regex for APP open shifts.")
+    ] = None,
+    tz: Annotated[str | None, typer.Option("--tz", help="IANA timezone.")] = None,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write JSON to this file.")
+    ] = None,
+) -> None:
+    """List open shifts grouped as MD, APP, or unknown."""
+
+    async def run() -> Any:
+        async with LightningBoltClient.from_env() as client:
+            return model_to_jsonable(
+                await client.list_open_shift_groups(
+                    start_date=start,
+                    end_date=end,
+                    view_id=view_id,
+                    template_ids=template_id,
+                    template_query=template_query,
+                    assignment_query=assignment_query,
+                    max_results=max_results,
+                    fields=field,
+                    md_patterns=md_pattern,
+                    app_patterns=app_pattern,
+                    tz=tz,
+                ),
+                include_raw=False,
+            )
+
+    _emit(asyncio.run(run()), output)
+
+
 @app.command("working-with")
 def working_with(
     employee: Annotated[str, typer.Argument(help="Employee ID or fuzzy name.")],

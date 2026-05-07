@@ -35,6 +35,8 @@ from lightning_bolt_api.models import (
     EmployeeMatch,
     EmployeeRef,
     EmployeeScheduleSummary,
+    OpenShiftGroup,
+    OpenShiftGroupSummary,
     OpenShiftSummary,
     OverlapSummary,
     ResultMetadata,
@@ -715,6 +717,8 @@ class LightningBoltClient:
             template_ids=template_ids,
             tz=tz,
         )
+        start = _model_date(start_date)
+        end = _model_date(end_date)
         open_slots = [
             slot
             for slot in _filter_slots(
@@ -722,12 +726,12 @@ class LightningBoltClient:
                 template_query=template_query,
                 assignment_query=assignment_query,
             )
-            if slot.is_open_shift
+            if slot.is_open_shift and _slot_in_date_range(slot, start, end)
         ]
         limited = _limit_items(open_slots, max_results) if detail_level == "compact" else []
         return OpenShiftSummary(
-            start_date=_model_date(start_date),
-            end_date=_model_date(end_date),
+            start_date=start,
+            end_date=end,
             open_shift_count=len(open_slots),
             open_shift_dates=sorted(
                 {slot.slot_date for slot in open_slots if slot.slot_date is not None}
@@ -740,6 +744,76 @@ class LightningBoltClient:
                 if detail_level == "compact"
                 else ResultMetadata(total_matches=len(open_slots), returned=0, truncated=False)
             ),
+        )
+
+    async def list_open_shift_groups(
+        self,
+        *,
+        start_date: date | str,
+        end_date: date | str,
+        view_id: int | None = None,
+        template_ids: list[int] | None = None,
+        template_query: str | None = None,
+        assignment_query: str | None = None,
+        max_results: int = 200,
+        fields: list[str] | None = None,
+        md_patterns: list[str] | None = None,
+        app_patterns: list[str] | None = None,
+        tz: str | None = None,
+    ) -> OpenShiftGroupSummary:
+        slots = await self.fetch_schedule(
+            view_id=view_id,
+            start_date=start_date,
+            end_date=end_date,
+            template_ids=template_ids,
+            tz=tz,
+        )
+        start = _model_date(start_date)
+        end = _model_date(end_date)
+        open_slots = [
+            slot
+            for slot in _filter_slots(
+                slots,
+                template_query=template_query,
+                assignment_query=assignment_query,
+            )
+            if slot.is_open_shift and _slot_in_date_range(slot, start, end)
+        ]
+        grouped: dict[str, list[Slot]] = {"md": [], "app": [], "unknown": []}
+        for slot in open_slots:
+            provider_type = _open_provider_type(
+                slot,
+                md_patterns=md_patterns,
+                app_patterns=app_patterns,
+            )
+            grouped[provider_type].append(slot)
+        groups = {
+            provider_type: OpenShiftGroup(
+                provider_type=provider_type,
+                open_shift_count=len(type_slots),
+                open_shift_dates=sorted(
+                    {slot.slot_date for slot in type_slots if slot.slot_date is not None}
+                ),
+                shifts=[
+                    _compact_slot(
+                        slot,
+                        fields=fields,
+                        provider_type=provider_type,
+                    )
+                    for slot in _limit_items(type_slots, max_results)
+                ],
+                metadata=_metadata(len(type_slots), min(len(type_slots), max_results)),
+            )
+            for provider_type, type_slots in grouped.items()
+        }
+        return OpenShiftGroupSummary(
+            start_date=start,
+            end_date=end,
+            open_shift_count=len(open_slots),
+            open_shift_dates=sorted(
+                {slot.slot_date for slot in open_slots if slot.slot_date is not None}
+            ),
+            groups=groups,
         )
 
     async def get_open_shift_dates(
@@ -1304,7 +1378,12 @@ def _model_date(value: date | str) -> date:
     return datetime.strptime(formatted, "%Y%m%d").date()
 
 
-def _compact_slot(slot: Slot, *, fields: list[str] | None = None) -> CompactSlot:
+def _compact_slot(
+    slot: Slot,
+    *,
+    fields: list[str] | None = None,
+    provider_type: str | None = None,
+) -> CompactSlot:
     data = {
         "date": slot.slot_date,
         "start_time": slot.start_time,
@@ -1317,11 +1396,63 @@ def _compact_slot(slot: Slot, *, fields: list[str] | None = None) -> CompactSlot
         "display_name": slot.display_name,
         "compact_name": slot.compact_name,
         "is_open_shift": slot.is_open_shift,
+        "provider_type": provider_type,
+        "is_pending": slot.is_pending,
+        "is_granted_request": slot.is_granted_request,
+        "is_manual_slot": slot.is_manual_slot,
+        "has_note": slot.has_note,
     }
     if fields:
-        allowed = set(fields) | {"is_open_shift"}
+        allowed = set(fields) | {"is_open_shift", "provider_type"}
         data = {key: value for key, value in data.items() if key in allowed}
     return CompactSlot(**data)
+
+
+def _slot_in_date_range(slot: Slot, start: date, end: date) -> bool:
+    return slot.slot_date is not None and start <= slot.slot_date <= end
+
+
+def _open_provider_type(
+    slot: Slot,
+    *,
+    md_patterns: list[str] | None = None,
+    app_patterns: list[str] | None = None,
+) -> str:
+    haystack = " ".join(
+        value
+        for value in [
+            slot.template_name,
+            slot.assign_display_name,
+            slot.compact_name,
+            str(slot.template_id) if slot.template_id is not None else None,
+            str(slot.assign_id) if slot.assign_id is not None else None,
+        ]
+        if value
+    )
+    app = _compiled_patterns(app_patterns, "LB_OPEN_APP_PATTERNS", [r"\bAPP\b"])
+    md = _compiled_patterns(
+        md_patterns,
+        "LB_OPEN_MD_PATTERNS",
+        [r"\bMD\b", r"\bPhysician\b", r"\bDoctor\b"],
+    )
+    if any(pattern.search(haystack) for pattern in app):
+        return "app"
+    if any(pattern.search(haystack) for pattern in md):
+        return "md"
+    return "unknown"
+
+
+def _compiled_patterns(
+    patterns: list[str] | None,
+    env_name: str,
+    defaults: list[str],
+) -> list[re.Pattern[str]]:
+    configured = patterns if patterns is not None else _env_patterns(env_name)
+    return [re.compile(pattern, re.IGNORECASE) for pattern in (configured or defaults)]
+
+
+def _env_patterns(name: str) -> list[str]:
+    return [part.strip() for part in os.getenv(name, "").split(",") if part.strip()]
 
 
 def _employee_ref_from_slots(emp_id: int | None, slots: list[Slot]) -> EmployeeRef:
