@@ -63,6 +63,7 @@ MCP clients should prefer intent-level tools that return compact summaries:
 - Use `lb_find_overlapping_shifts` for overlap questions.
 - Use `lb_who_is_working` for date coverage questions.
 - Use `lb_list_open_shifts` for available open shifts.
+- Use `lb_list_open_shift_groups` when the user asks for MD vs APP open shifts.
 - Use `lb_get_open_shift_dates` when dates alone answer the question.
 - Use `lb_who_is_working_with` for "who works with me/them?"
 - Use `lb_get_next_*` tools for "next few" questions instead of broad ranges.
@@ -221,6 +222,12 @@ assignment counts. Set `include_workers=true` only when names or rows are needed
 ### `lb_list_open_shifts(start_date, end_date, view_id?, template_ids?, template_query?, assignment_query?, detail_level="dates", max_results=200, fields?, tz?)`
 
 Returns compact open-shift rows and count metadata.
+
+### `lb_list_open_shift_groups(start_date, end_date, view_id?, template_ids?, template_query?, assignment_query?, max_results=200, fields?, md_patterns?, app_patterns?, tz?)`
+
+Returns open shifts grouped into `md`, `app`, and `unknown`. Classification uses generic
+template/assignment-name patterns by default. Use `md_patterns` / `app_patterns`, or the
+matching environment variables, when an organization labels provider groups differently.
 
 ### `lb_get_open_shift_dates(start_date, end_date, view_id?, template_ids?, template_query?, assignment_query?, max_results=200, tz?)`
 

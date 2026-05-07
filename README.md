@@ -97,6 +97,7 @@ uv run lb-api who-is-working --start 20260501 --end 20260501
 uv run lb-api who-is-working --start 20260501 --end 20260501 --detail-level summary
 uv run lb-api open-shift-dates --start 20260501 --end 20260531
 uv run lb-api open-shifts --start 20260501 --end 20260531 --detail-level compact
+uv run lb-api open-shift-groups --start 20260501 --end 20260531
 uv run lb-api working-with "halfast" --start 20260501 --end 20260531
 uv run lb-api next-my-shifts --count 5
 uv run lb-api next-open-shifts --count 10
@@ -171,6 +172,7 @@ MCP tools:
 - `lb_find_overlapping_shifts`
 - `lb_who_is_working`
 - `lb_list_open_shifts`
+- `lb_list_open_shift_groups`
 - `lb_get_open_shift_dates`
 - `lb_who_is_working_with`
 - `lb_get_next_my_shifts`

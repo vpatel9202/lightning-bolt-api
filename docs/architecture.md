@@ -131,6 +131,8 @@ The MCP surface favors compact tools over raw schedule exports:
 - overlap calculations use two employee-specific schedule reads
 - date-only tools return dates and counts without slot rows
 - coverage queries use ViewerAPI internally, then default to per-date counts
+- open-shift group queries use ViewerAPI internally, bound returned slot dates to the
+  requested range, then classify rows as `md`, `app`, or `unknown`
 - template and assignment breakdowns are opt-in with detail levels
 - broad low-level ViewerAPI/schedule tools remain available for debugging and exports
 
@@ -170,7 +172,10 @@ Key models:
 - `is_assigned_to(emp_id)`
 - `has_any_note`
 
-The helpers do not classify providers as MD, APP, or any organization-specific type.
+Open-shift grouping uses configurable template/assignment regex patterns to classify
+open rows as MD, APP, or unknown. This is intentionally limited to open-shift discovery;
+the library still does not classify ordinary assigned providers or encode
+organization-specific staffing policy.
 
 `Subscription` normalizes the active subscription record and derives app-specific
 calendar subscription URLs from the raw `md5` value. The library does not fetch or parse

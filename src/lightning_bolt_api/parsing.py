@@ -131,6 +131,7 @@ def parse_slot(raw: dict[str, Any]) -> Slot:
         assign_display_name=raw.get("assign_display_name"),
         assign_structure_id=raw.get("assign_structure_id"),
         is_pending=raw.get("is_pending"),
+        is_granted_request=raw.get("is_granted_request"),
         is_manual_slot=raw.get("is_manual_slot"),
         has_note=raw.get("has_note"),
         note=raw.get("note"),

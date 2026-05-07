@@ -554,6 +554,20 @@ GET https://lbapi.lightning-bolt.com/schedule/range/?start_date=YYYYMMDD&end_dat
 Use broad ViewerAPI reads for coverage, open-shift, and debugging workflows where a full
 view is actually needed.
 
+ViewerAPI can return slots outside the requested range because the schedule view expands
+to visible calendar weeks. Consumer-facing helpers should filter parsed rows by
+`slot_date` after the API call.
+
+Open shifts have been observed as administrative placeholder personnel, commonly
+`last_name == "z.Administrative"` with display labels such as `OPEN 1`. MD/APP grouping is
+not a first-class API field; use template and assignment labels, with caller-configurable
+patterns, and keep unknown rows instead of dropping them.
+
+Pending/request flags are visible when Lightning Bolt includes fields such as
+`is_pending`, `is_granted_request`, `request_note`, and `decision_note`. A granted pickup
+may be indistinguishable from a normal assigned shift once the slot is finalized; clients
+should not infer pickup history without a reliable field in the raw slot.
+
 ## Security And Sanitization
 
 Never log or commit:
