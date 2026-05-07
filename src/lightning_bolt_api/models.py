@@ -6,9 +6,11 @@ import re
 from datetime import date, datetime
 from datetime import date as Date
 from datetime import datetime as DateTime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+AssignmentOrigin = Literal["regular", "trade_in", "trade_out", "unknown_reassignment"]
 
 
 class RawModel(BaseModel):
@@ -127,6 +129,14 @@ class Slot(RawModel):
     location_names: list[str] = Field(default_factory=list)
     emp_ptype: int | None = None
     assign_atype: int | None = None
+    original_emp_id: int | None = None
+    modified_by_emp_id: int | None = None
+    modified_by_display_name: str | None = None
+    modified_date: datetime | None = None
+    emp_request_id: int | None = None
+    emp_request_status: str | None = None
+    is_pending_request: bool | None = None
+    slot_history: list[dict[str, Any]] = Field(default_factory=list)
 
     @field_validator("assign_structure_id", mode="before")
     @classmethod
@@ -134,6 +144,13 @@ class Slot(RawModel):
         if value is None:
             return None
         return str(value)
+
+    @field_validator("slot_history", mode="before")
+    @classmethod
+    def _coerce_slot_history(cls, value: Any) -> list[dict[str, Any]]:
+        if value is None:
+            return []
+        return value
 
     @property
     def is_open_shift(self) -> bool:
@@ -145,6 +162,29 @@ class Slot(RawModel):
 
     def is_assigned_to(self, emp_id: int) -> bool:
         return self.emp_id == emp_id
+
+    @property
+    def is_reassigned(self) -> bool:
+        return self.original_emp_id is not None and self.original_emp_id != self.emp_id
+
+    def is_trade_in_for(self, emp_id: int | None) -> bool:
+        if emp_id is None:
+            return False
+        return self.emp_id == emp_id and self.original_emp_id not in (None, emp_id)
+
+    def is_trade_out_from(self, emp_id: int | None) -> bool:
+        if emp_id is None:
+            return False
+        return self.emp_id != emp_id and self.original_emp_id == emp_id
+
+    def assignment_origin_for(self, emp_id: int | None = None) -> AssignmentOrigin:
+        if not self.is_reassigned:
+            return "regular"
+        if self.is_trade_in_for(emp_id):
+            return "trade_in"
+        if self.is_trade_out_from(emp_id):
+            return "trade_out"
+        return "unknown_reassignment"
 
     @property
     def has_any_note(self) -> bool:
@@ -168,6 +208,14 @@ class CompactSlot(BaseModel):
     is_granted_request: bool | None = None
     is_manual_slot: bool | None = None
     has_note: bool | None = None
+    original_emp_id: int | None = None
+    assignment_origin: AssignmentOrigin | None = None
+    modified_by_emp_id: int | None = None
+    modified_by_display_name: str | None = None
+    modified_date: DateTime | None = None
+    emp_request_id: int | None = None
+    emp_request_status: str | None = None
+    is_pending_request: bool | None = None
 
 
 class ResultMetadata(BaseModel):
@@ -191,6 +239,50 @@ class EmployeeScheduleSummary(BaseModel):
     shift_count: int = 0
     shift_dates: list[Date] = Field(default_factory=list)
     shifts: list[CompactSlot] = Field(default_factory=list)
+    metadata: ResultMetadata = Field(default_factory=ResultMetadata)
+
+
+class SlotHistoryEntry(BaseModel):
+    text: str | None = None
+    timestamp: DateTime | None = None
+
+
+class ShiftTrade(BaseModel):
+    date: Date | None = None
+    start_time: DateTime | None = None
+    stop_time: DateTime | None = None
+    template_id: int | None = None
+    template_name: str | None = None
+    assignment_id: int | None = None
+    assignment_name: str | None = None
+    assignment_origin: AssignmentOrigin
+    emp_id: int | None = None
+    display_name: str | None = None
+    compact_name: str | None = None
+    original_emp_id: int | None = None
+    original_display_name: str | None = None
+    original_compact_name: str | None = None
+    modified_by_emp_id: int | None = None
+    modified_by_display_name: str | None = None
+    modified_date: DateTime | None = None
+    note: str | None = None
+    request_note: str | None = None
+    decision_note: str | None = None
+    emp_request_id: int | None = None
+    emp_request_status: str | None = None
+    is_pending: bool | None = None
+    is_granted_request: bool | None = None
+    is_pending_request: bool | None = None
+    slot_history: list[SlotHistoryEntry] = Field(default_factory=list)
+
+
+class ShiftTradeSummary(BaseModel):
+    employee: EmployeeRef
+    start_date: Date
+    end_date: Date
+    trade_count: int = 0
+    trade_dates: list[Date] = Field(default_factory=list)
+    trades: list[ShiftTrade] = Field(default_factory=list)
     metadata: ResultMetadata = Field(default_factory=ResultMetadata)
 
 

@@ -141,6 +141,14 @@ def parse_slot(raw: dict[str, Any]) -> Slot:
         location_names=raw.get("location_names") or [],
         emp_ptype=raw.get("emp_ptype"),
         assign_atype=raw.get("assign_atype"),
+        original_emp_id=raw.get("original_emp_id"),
+        modified_by_emp_id=raw.get("modified_by_emp_id"),
+        modified_by_display_name=raw.get("modified_by_display_name"),
+        modified_date=raw.get("modified_date"),
+        emp_request_id=raw.get("emp_request_id"),
+        emp_request_status=raw.get("emp_request_status"),
+        is_pending_request=raw.get("is_pending_request"),
+        slot_history=raw.get("slot_history") or [],
         raw=raw,
     )
 

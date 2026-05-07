@@ -91,6 +91,8 @@ uv run lb-api my-shift-dates --start 20260501 --end 20260531
 uv run lb-api my-shifts --start 20260501 --end 20260531 --detail-level compact
 uv run lb-api employee-shift-dates "halfast" --start 20260501 --end 20260531
 uv run lb-api employee-shifts "halfast" --start 20260501 --end 20260531 --detail-level dates
+uv run lb-api my-shift-trades --start 20260701 --end 20260731
+uv run lb-api employee-shift-trades "halfast" --start 20260701 --end 20260731
 uv run lb-api count-shifts "halfast" --start 20260501 --end 20260531 --group-by date
 uv run lb-api overlaps "halfast" --start 20260501 --end 20260531 --detail-level dates
 uv run lb-api who-is-working --start 20260501 --end 20260501
@@ -168,6 +170,8 @@ MCP tools:
 - `lb_get_my_shift_dates`
 - `lb_get_employee_shifts`
 - `lb_get_employee_shift_dates`
+- `lb_get_my_shift_trades`
+- `lb_get_employee_shift_trades`
 - `lb_count_employee_shifts`
 - `lb_find_overlapping_shifts`
 - `lb_who_is_working`

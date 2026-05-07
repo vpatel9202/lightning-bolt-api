@@ -128,6 +128,8 @@ for normal provider lookup.
 The MCP surface favors compact tools over raw schedule exports:
 
 - employee shift reads and counts use `/schedule/range` with a resolved `emp_id`
+- trade queries use ViewerAPI so trade-outs are visible when the current assignee is not
+  the perspective employee
 - overlap calculations use two employee-specific schedule reads
 - date-only tools return dates and counts without slot rows
 - coverage queries use ViewerAPI internally, then default to per-date counts
@@ -170,7 +172,18 @@ Key models:
 
 - `is_open_shift`
 - `is_assigned_to(emp_id)`
+- `is_reassigned`
+- `is_trade_in_for(emp_id)`
+- `is_trade_out_from(emp_id)`
+- `assignment_origin_for(emp_id)`
 - `has_any_note`
+
+Trade helpers classify reassigned slots from the perspective of one employee. A slot is a
+trade-in when the current `emp_id` matches the perspective employee and `original_emp_id`
+is different. It is a trade-out when `original_emp_id` matches the perspective employee
+and the current `emp_id` is someone else. Scheduler-filled open pickups may not be
+distinguishable after approval unless Lightning Bolt preserves an explicit provenance
+field.
 
 Open-shift grouping uses configurable template/assignment regex patterns to classify
 open rows as MD, APP, or unknown. This is intentionally limited to open-shift discovery;

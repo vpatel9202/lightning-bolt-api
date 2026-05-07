@@ -30,6 +30,8 @@ async def test_mcp_tool_registration() -> None:
     assert "lb_get_employee_shifts" in names
     assert "lb_get_employee_shift_dates" in names
     assert "lb_count_employee_shifts" in names
+    assert "lb_get_my_shift_trades" in names
+    assert "lb_get_employee_shift_trades" in names
     assert "lb_find_overlapping_shifts" in names
     assert "lb_who_is_working" in names
     assert "lb_list_open_shifts" in names
