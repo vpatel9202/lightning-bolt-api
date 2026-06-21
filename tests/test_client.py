@@ -487,6 +487,80 @@ async def test_find_employee_auto_discovers_broad_view(
 
 @pytest.mark.asyncio
 @respx.mock
+async def test_discover_broad_view_skips_empty_body_probe(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LB_VIEW_PROBE_MAX", "50")
+    token = jwt_with_claims(exp=int(time.time()) + 3600)
+    client = LightningBoltClient(
+        session=SessionState(
+            access_token=token,
+            refresh_token="refresh",
+            expires_at=int(time.time()) + 3600,
+            emp_id=20319,
+        ),
+        session_cache=None,
+    )
+
+    def viewerapi_response(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        # An early probe returns 200 OK with an empty body, which makes
+        # response.json() raise json.JSONDecodeError. Discovery must skip it
+        # and keep probing rather than crashing.
+        if body.get("view_id") == 1:
+            return httpx.Response(200, content=b"")
+        if body.get("view_id") == 50:
+            return httpx.Response(
+                200,
+                json={
+                    "view_context": {"view_id": 50, "name": "Hospital Medicine"},
+                    "personnel": [
+                        {
+                            "emp_id": 20319,
+                            "display_name": "Vash Patel",
+                            "compact_name": "vvp",
+                            "last_name": "Patel",
+                        },
+                        {
+                            "emp_id": 20088,
+                            "display_name": "Halfast, Ashley",
+                            "compact_name": "A Halfast",
+                            "last_name": "Halfast",
+                        },
+                    ],
+                },
+            )
+        if "view_id" in body:
+            return httpx.Response(404, json={"detail": "not found"})
+        return httpx.Response(
+            200,
+            json={
+                "view_context": {"view_id": 0, "name": "Me"},
+                "views": [{"view_id": 0, "name": "Me"}],
+                "personnel": [
+                    {
+                        "emp_id": 20319,
+                        "display_name": "Vash Patel",
+                        "compact_name": "vvp",
+                        "last_name": "Patel",
+                    }
+                ],
+            },
+        )
+
+    respx.post(f"{LBAPI_BASE_URL}/viewerapi").mock(side_effect=viewerapi_response)
+
+    try:
+        matches = await client.find_employee("Halfast")
+    finally:
+        await client.aclose()
+
+    assert matches[0].emp_id == 20088
+    assert client.session.discovered_view_id == 50
+
+
+@pytest.mark.asyncio
+@respx.mock
 async def test_auto_discovery_falls_back_to_personal_context(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

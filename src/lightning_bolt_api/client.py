@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import difflib
 import json
+import logging
 import os
 import re
 from collections import defaultdict
@@ -62,6 +63,8 @@ from lightning_bolt_api.parsing import (
     parse_viewerapi,
     token_expired_or_stale,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class LightningBoltError(RuntimeError):
@@ -1254,6 +1257,8 @@ class LightningBoltClient:
     ) -> tuple[int, ViewerApiResponse] | None:
         best: tuple[int, ViewerApiResponse] | None = None
         best_score = _viewer_breadth_score(default_viewer)
+        decode_failures: list[int] = []
+        saw_success = False
         for view_id in _candidate_view_ids(default_viewer):
             try:
                 viewer = await self._get_viewerapi_direct(view_id=view_id, tz=tz)
@@ -1261,10 +1266,24 @@ class LightningBoltClient:
                 if exc.response.status_code in {403, 404}:
                     continue
                 raise
+            except (json.JSONDecodeError, httpx.DecodingError):
+                logger.warning(
+                    "Broad-view discovery: view_id %s returned an empty/invalid "
+                    "JSON body; skipping to next probe.",
+                    view_id,
+                )
+                decode_failures.append(view_id)
+                continue
+            saw_success = True
             score = _viewer_breadth_score(viewer)
             if score > best_score:
                 best = (view_id, viewer)
                 best_score = score
+        if best is None and decode_failures and not saw_success:
+            raise LightningBoltError(
+                "Broad-view discovery failed: every probed view returned an "
+                f"empty/invalid JSON body (view ids: {decode_failures})."
+            )
         return best
 
     async def _exchange_refresh_token(self, refresh_token: str) -> None:
